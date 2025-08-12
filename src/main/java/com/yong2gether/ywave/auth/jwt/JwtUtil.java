@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 @Component
 public class JwtUtil {
@@ -20,27 +18,34 @@ public class JwtUtil {
 
     public JwtUtil(
             @Value("${jwt.secret}") String base64Secret,
-            @Value("${jwt.ttl-millis:3600000}") long defaultTtlMillis // 기본 1시간
+            @Value("${jwt.ttl-millis:3600000}") long defaultTtlMillis
     ) {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret));
         this.defaultTtlMillis = defaultTtlMillis;
     }
 
-    public String createAccessToken(String subject, List<String> roles) {
-        return createAccessToken(subject, roles, defaultTtlMillis);
+    public long getDefaultTtlMillis() { return defaultTtlMillis; }
+
+    // 새로 추가: roles 없이 subject만 담는 토큰
+    public String createAccessToken(String subject) {
+        return createAccessToken(subject, defaultTtlMillis);
     }
 
-    public String createAccessToken(String subject, List<String> roles, long ttlMillis) {
+    public String createAccessToken(String subject, long ttlMillis) {
         Instant now = Instant.now();
         Instant exp = now.plusMillis(ttlMillis);
 
         return Jwts.builder()
-                .subject(subject)                 // 일반적으로 이메일/아이디
+                .subject(subject)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(exp))
-                .claims(Map.of("roles", roles))   // 커스텀 클레임
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();
+    }
+
+    @Deprecated
+    public String createAccessToken(String subject, java.util.List<String> roles) {
+        return createAccessToken(subject);
     }
 
     public boolean validate(String token) {
@@ -54,15 +59,6 @@ public class JwtUtil {
 
     public String getSubject(String token) {
         return parseAllClaims(token).getSubject();
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<String> getRoles(String token) {
-        Object val = parseAllClaims(token).get("roles");
-        if (val instanceof List<?> list) {
-            return list.stream().map(String::valueOf).toList();
-        }
-        return List.of();
     }
 
     private Claims parseAllClaims(String token) {
