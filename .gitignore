@@ -38,3 +38,4 @@ out/
 
 # YAML 파일 무시
 *.yaml
+*.yml
