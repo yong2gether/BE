@@ -61,7 +61,7 @@ public class SecurityConfig {
         );
 
         http
-                // 무상태 + 기본 폼/베이직 인증 비활성화
+                // Stateless + 기본 폼/베이직 인증 비활성화
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
