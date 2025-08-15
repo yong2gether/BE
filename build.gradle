@@ -24,10 +24,12 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    runtimeOnly 'com.h2database:h2'
 
     // Swagger / OpenAPI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
@@ -38,14 +40,20 @@ dependencies {
     runtimeOnly  'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
     // DB drivers
-    runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'com.mysql:mysql-connector-j'       // <- 필요 시 사용, 구버전 좌표는 제거!
+    // runtimeOnly 'com.h2database:h2'
+    // runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly  'org.postgresql:postgresql:42.7.3'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.8'
+    testImplementation 'org.testcontainers:postgresql:1.19.8'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 }
 
 tasks.named('test') {
