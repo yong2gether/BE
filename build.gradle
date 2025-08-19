@@ -40,11 +40,11 @@ dependencies {
     runtimeOnly  'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
     // DB drivers
-    // runtimeOnly 'com.h2database:h2'
-    // runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly  'org.postgresql:postgresql:42.7.3'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.8'
     testImplementation 'org.testcontainers:postgresql:1.19.8'
+    implementation 'org.hibernate.orm:hibernate-spatial'
+    implementation 'org.locationtech.jts:jts-core'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
@@ -54,6 +54,8 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+    implementation 'com.openai:openai-java:3.0.3'
 }
 
 tasks.named('test') {
