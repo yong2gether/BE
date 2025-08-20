@@ -53,6 +53,7 @@ public class PlaceDetailsDto {
     private List<String> weekdayText; // 영업시간
     private List<Photo> photos;
     private List<Review> reviews;
+    private Integer reviewCount;
 
     public PlaceDetailsDto() {}
 
@@ -65,6 +66,7 @@ public class PlaceDetailsDto {
         this.weekdayText = weekdayText; this.photos = photos; this.reviews = reviews;
     }
 
+    //getter
     public String getPlaceId() { return placeId; }
     public String getName() { return name; }
     public String getFormattedAddress() { return formattedAddress; }
@@ -77,7 +79,9 @@ public class PlaceDetailsDto {
     public List<String> getWeekdayText() { return weekdayText; }
     public List<Photo> getPhotos() { return photos; }
     public List<Review> getReviews() { return reviews; }
+    public Integer getReviewCount() { return reviewCount; }
 
+    //setter
     public void setPlaceId(String placeId) { this.placeId = placeId; }
     public void setName(String name) { this.name = name; }
     public void setFormattedAddress(String formattedAddress) { this.formattedAddress = formattedAddress; }
@@ -90,4 +94,5 @@ public class PlaceDetailsDto {
     public void setWeekdayText(List<String> weekdayText) { this.weekdayText = weekdayText; }
     public void setPhotos(List<Photo> photos) { this.photos = photos; }
     public void setReviews(List<Review> reviews) { this.reviews = reviews; }
+    public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
 }

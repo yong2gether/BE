@@ -52,7 +52,7 @@ public class PlacesClient {
         q.add("place_id", placeId);
         q.add("fields",
                 "place_id,name,formatted_address,international_phone_number,opening_hours,photos,reviews," +
-                        "rating,geometry,website,url");
+                        "rating,geometry,website,url,user_ratings_total");
         q.add("language", props.getLanguage());
         q.add("key", props.getApiKey());
 
@@ -86,11 +86,14 @@ public class PlacesClient {
 
         List<String> weekdayText = r.openingHours != null ? r.openingHours.weekdayText : null;
 
-        return new PlaceDetailsDto(
+        PlaceDetailsDto dto = new PlaceDetailsDto(
                 r.placeId, r.name, r.formattedAddress, r.internationalPhoneNumber,
                 lng, lat, r.website, r.url, r.rating,
                 weekdayText, photos, reviews
         );
+
+        dto.setReviewCount(r.userRatingsTotal);
+        return dto;
     }
 
     public String buildPhotoUrl(String photoReference) {
@@ -116,7 +119,6 @@ public class PlacesClient {
 
     public static class DetailsResponse {
         public Result result;
-        public String status;
 
         public static class Result {
             @JsonProperty("place_id")
@@ -134,6 +136,8 @@ public class PlacesClient {
             public String website;
             @JsonProperty("url")
             public String url;
+            @JsonProperty("user_ratings_total")
+            public Integer userRatingsTotal;
         }
 
         public static class OpeningHours {
