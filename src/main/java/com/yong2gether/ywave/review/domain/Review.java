@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "review")
+@Table(name = "review", schema = "core")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Review extends BaseTime { // BaseTime 상속 -> created_at(생성일), updated_at(수정일) 자동 세팅
 
@@ -26,3 +26,4 @@ public class Review extends BaseTime { // BaseTime 상속 -> created_at(생성�
     @Column(nullable = false)
     private Double rating; // 별점
 }
+
