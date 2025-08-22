@@ -52,7 +52,7 @@ public class BookmarkQueryService {
             if (r.getStoreId() != null) {
                 groupDto.stores().add(new BookmarkedStoreDto(
                         r.getStoreId(), r.getStoreName(), r.getCategory(), r.getRoadAddress(),
-                        r.getLat(), r.getLng(), r.getPhone(), r.getRating(), r.getReviewCount()
+                        r.getLat(), r.getLng(), r.getPhone(), r.getRating(), r.getReviewCount(), r.getThumbnailUrl()
                 ));
             }
         }

@@ -2,7 +2,7 @@
 package com.yong2gether.ywave.mypage.dto;
 
 public record BookmarkedStoreDto(
-        String storeId,
+        Long storeId,
         String storeName,
         String category,
         String roadAddress,
@@ -10,6 +10,6 @@ public record BookmarkedStoreDto(
         Double lng,
         String phone,
         Double rating,
-        Integer reviewCount
-        /*String thumbnailUrl*/
+        Integer reviewCount,
+        String thumbnailUrl
 ) {}
