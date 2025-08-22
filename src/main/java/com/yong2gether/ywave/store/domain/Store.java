@@ -47,4 +47,5 @@ public class Store {
     public void setMainPrdRaw(String mainPrdRaw) { this.mainPrdRaw = mainPrdRaw; }
     public Point getGeom() { return geom; }
     public void setGeom(Point geom) { this.geom = geom; }
+
 }
