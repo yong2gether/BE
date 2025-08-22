@@ -7,13 +7,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority; // ★ 추가
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,30 +42,22 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
-
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
 
-            // 유효 토큰 + 아직 인증 안되어 있으면 진행
             if (jwtUtil.validate(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // 우리 설계: subject = email
                 String email = jwtUtil.getSubject(token);
 
-                // DB 사용자 확인
+                // DB에 실제 사용자 존재 확인. 없으면 인증 미설정.
                 Optional<User> userOpt = userRepository.findByEmail(email);
                 if (userOpt.isPresent()) {
-
-                    // ★ 권한 부여: 최소한 ROLE_USER 한 개는 넣어준다
-                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-
-                    // principal은 email로 유지 (원하면 userOpt.get() 로 바꿔도 됨)
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
                                     email,
                                     null,
-                                    authorities // ★ emptyList() → ROLE_USER 부여
+                                    Collections.emptyList()
                             );
-
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
