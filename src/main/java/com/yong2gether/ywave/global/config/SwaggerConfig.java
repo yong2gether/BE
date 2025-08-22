@@ -28,7 +28,7 @@ public class SwaggerConfig {
         server1.setUrl("http://localhost:8080");
 
         List<Server> serverList = new ArrayList<>();
-//        serverList.add(server);
+        serverList.add(server);
         serverList.add(server1);
 
         return new OpenAPI()
