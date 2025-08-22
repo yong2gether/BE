@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Schema(name = "ReviewItem")
 public record ReviewItemDto(
         @Schema(example = "1") Long reviewId,
-        @Schema(example = "s101") String storeId,
+        @Schema(example = "123") Long storeId,
         @Schema(example = "스타벅스") String storeName,
         @Schema(example = "커피 맛집!") String content,
         @Schema(example = "4.5") Double rating,

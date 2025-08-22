@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public interface ReviewListItemView {
     Long getReviewId();
-    String getStoreId();
+    Long getStoreId();
     String getStoreName();
     String getContent();
     Double getRating();
