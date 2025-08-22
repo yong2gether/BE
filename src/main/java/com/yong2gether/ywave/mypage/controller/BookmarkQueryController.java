@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +29,10 @@ public class BookmarkQueryController {
     @GetMapping("/{userId}/bookmarks/groups")
     @PreAuthorize("@authz.isSelfOrAdmin(#userId, authentication)")
     public ResponseEntity<BookmarkedGroupsResponse> getBookmarkedGroups(
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            Authentication authentication
     ) {
+        System.out.println("[DEBUG] bookmarks principal=" + (authentication != null ? authentication.getName() : null) + ", userId=" + userId);
         List<BookmarkGroupDto> groups = bookmarkQueryService.getBookmarkedGroups(userId);
         return ResponseEntity.ok(BookmarkedGroupsResponse.ok(groups));
     }
