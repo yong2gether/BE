@@ -1,6 +1,7 @@
 package com.yong2gether.ywave.global.exception;
 
 import com.yong2gether.ywave.user.service.UserService;
+import com.yong2gether.ywave.mypage.service.BookmarkGroupCommandService;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,12 @@ public class ApiExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDuplicate(UserService.DuplicateEmailException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("DUPLICATE_EMAIL", ex.getMessage()));
+    }
+
+    @ExceptionHandler(BookmarkGroupCommandService.DuplicateGroupNameException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateGroup(BookmarkGroupCommandService.DuplicateGroupNameException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse("DUPLICATE_GROUP_NAME", ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

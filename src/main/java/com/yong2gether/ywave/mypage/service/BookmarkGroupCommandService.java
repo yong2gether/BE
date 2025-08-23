@@ -28,4 +28,22 @@ public class BookmarkGroupCommandService {
                     return groupRepo.save(g);
                 });
     }
+
+    @Transactional
+    public BookmarkGroup createGroup(Long userId, String groupName) {
+        if (groupRepo.existsByUserIdAndName(userId, groupName)) {
+            throw new DuplicateGroupNameException("이미 존재하는 그룹 이름입니다.");
+        }
+        User user = userRepo.getReferenceById(userId);
+        BookmarkGroup g = BookmarkGroup.builder()
+                .user(user)
+                .name(groupName)
+                .isDefault(false)
+                .build();
+        return groupRepo.save(g);
+    }
+
+    public static class DuplicateGroupNameException extends RuntimeException {
+        public DuplicateGroupNameException(String message) { super(message); }
+    }
 }
