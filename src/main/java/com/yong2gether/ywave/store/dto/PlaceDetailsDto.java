@@ -27,18 +27,23 @@ public class PlaceDetailsDto {
         private String text;
         private Long time; // epoch seconds
 
+        private List<Photo> photos;
+
         public Review() {}
-        public Review(String authorName, Double rating, String text, Long time) {
+        public Review(String authorName, Double rating, String text, Long time, List<Photo> photos) {
             this.authorName = authorName; this.rating = rating; this.text = text; this.time = time;
+            this.photos = photos;
         }
         public String getAuthorName() { return authorName; }
         public Double getRating() { return rating; }
         public String getText() { return text; }
         public Long getTime() { return time; }
+        public List<Photo> getPhotos() {return photos;}
         public void setAuthorName(String authorName) { this.authorName = authorName; }
         public void setRating(Double rating) { this.rating = rating; }
         public void setText(String text) { this.text = text; }
         public void setTime(Long time) { this.time = time; }
+        public void setPhotos(List<Photo> photos) {this.photos = photos;}
     }
 
     private String placeId;
@@ -54,6 +59,9 @@ public class PlaceDetailsDto {
     private List<Photo> photos;
     private List<Review> reviews;
     private Integer reviewCount;
+    private Boolean bookmarked;
+    private String category;
+
 
     public PlaceDetailsDto() {}
 
@@ -80,6 +88,8 @@ public class PlaceDetailsDto {
     public List<Photo> getPhotos() { return photos; }
     public List<Review> getReviews() { return reviews; }
     public Integer getReviewCount() { return reviewCount; }
+    public Boolean getBookmarked() {return bookmarked;}
+    public String getCategory() {return category;}
 
     //setter
     public void setPlaceId(String placeId) { this.placeId = placeId; }
@@ -95,4 +105,6 @@ public class PlaceDetailsDto {
     public void setPhotos(List<Photo> photos) { this.photos = photos; }
     public void setReviews(List<Review> reviews) { this.reviews = reviews; }
     public void setReviewCount(Integer reviewCount) { this.reviewCount = reviewCount; }
+    public void setBookmarked(Boolean bookmarked) {this.bookmarked = bookmarked;}
+    public void setCategory(String category) {this.category= category;}
 }

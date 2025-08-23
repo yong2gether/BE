@@ -80,7 +80,7 @@ public class PlacesClient {
         List<PlaceDetailsDto.Review> reviews = new ArrayList<>();
         if (r.reviews != null) {
             for (DetailsResponse.Review rv : r.reviews) {
-                reviews.add(new PlaceDetailsDto.Review(rv.authorName, rv.rating, rv.text, rv.time));
+                reviews.add(new PlaceDetailsDto.Review(rv.authorName, rv.rating, rv.text, rv.time, List.of()));
             }
         }
 

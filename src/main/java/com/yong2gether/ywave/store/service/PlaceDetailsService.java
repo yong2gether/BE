@@ -1,5 +1,6 @@
 package com.yong2gether.ywave.store.service;
 
+import com.yong2gether.ywave.mypage.service.BookmarkQueryService;
 import com.yong2gether.ywave.store.domain.Store;
 import com.yong2gether.ywave.store.domain.StorePlaceMapping;
 import com.yong2gether.ywave.store.dto.PlaceDetailsDto;

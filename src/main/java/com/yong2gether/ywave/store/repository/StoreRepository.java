@@ -126,7 +126,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             @Param("q") String q
     );
 
-    // -------------------- 분류 상태 점검 --------------------
+    // 분류 상태 점검
     @Query(value = """
         SELECT COUNT(*)
         FROM core.stores s
@@ -146,7 +146,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Store> findUncategorizedAfter(@Param("afterId") long afterId,
                                        @Param("limit") int limit);
 
-    // ---- Signature 유틸 (정규화된 이름/주소 기반) ----
+    //Signature 유틸 (정규화된 이름/주소 기반)
     interface SignatureRow {
         String getSig();
         Long getCnt();
