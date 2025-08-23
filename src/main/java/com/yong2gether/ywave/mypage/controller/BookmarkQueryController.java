@@ -3,6 +3,7 @@ package com.yong2gether.ywave.mypage.controller;
 
 import com.yong2gether.ywave.mypage.dto.*;
 import com.yong2gether.ywave.mypage.service.BookmarkQueryService;
+import com.yong2gether.ywave.mypage.service.BookmarkGroupCommandService;
 import com.yong2gether.ywave.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.*;
@@ -22,6 +23,7 @@ import java.util.List;
 public class BookmarkQueryController {
 
     private final BookmarkQueryService bookmarkQueryService;
+    private final BookmarkGroupCommandService bookmarkGroupCommandService;
     private final UserRepository userRepository;
 
     @Operation(summary="북마크한 가맹점 그룹별 조회",
@@ -46,5 +48,42 @@ public class BookmarkQueryController {
         System.out.println("[DEBUG] bookmarks principal=" + email + ", userId=" + userId);
         List<BookmarkGroupDto> groups = bookmarkQueryService.getBookmarkedGroups(userId);
         return ResponseEntity.ok(BookmarkedGroupsResponse.ok(groups));
+    }
+
+    @Operation(summary="북마크 그룹 생성",
+            description="내부 인증된 사용자 기준으로 북마크 그룹을 생성합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode="200", description="생성 성공"),
+            @ApiResponse(responseCode="403", description="권한 없음")
+    })
+    @PostMapping("/bookmarks/groups")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CreateBookmarkGroupResponse> createBookmarkGroup(
+            Authentication authentication,
+            @RequestBody CreateBookmarkGroupRequest request
+    ) {
+        String email = (authentication != null ? authentication.getName() : null);
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증 필요");
+        }
+        Long userId = userRepository.findByEmail(email)
+                .map(u -> u.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자 정보를 찾을 수 없습니다."));
+
+        String groupName = request.groupName();
+        if (groupName == null || groupName.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "그룹 이름은 필수입니다.");
+        }
+
+        // 그룹 생성 (iconUrl은 현재 도메인에 저장 필드가 없어 응답에만 반영)
+        com.yong2gether.ywave.bookmark.domain.BookmarkGroup saved =
+                bookmarkGroupCommandService.createGroup(userId, groupName);
+
+        CreatedBookmarkGroupDto group = new CreatedBookmarkGroupDto(
+                saved.getId(),
+                saved.getName(),
+                request.iconUrl()
+        );
+        return ResponseEntity.ok(CreateBookmarkGroupResponse.ok(group));
     }
 }
