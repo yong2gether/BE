@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -75,5 +77,27 @@ public class BookmarkQueryService {
         }
         
         return result;
+    }
+
+    public BookmarkGroupDetailDto getBookmarkGroupDetail(Long userId, Long groupId) {
+        // 1) 그룹 정보 조회
+        BookmarkGroup group = bookmarkGroupCommandService.getGroupById(groupId);
+        
+        // 2) 사용자 권한 확인 (자신의 그룹만 조회 가능)
+        if (!group.getUser().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 그룹에 대한 접근 권한이 없습니다.");
+        }
+        
+        // 3) 해당 그룹의 가맹점 ID 목록 조회
+        List<Long> storeIds = bookmarkRepository.findStoreIdsByGroupId(groupId);
+        
+        // 4) DTO 생성 및 반환
+        return new BookmarkGroupDetailDto(
+            group.getId(),
+            group.getName(),
+            group.getIconUrl(),
+            group.isDefault(),
+            storeIds
+        );
     }
 }

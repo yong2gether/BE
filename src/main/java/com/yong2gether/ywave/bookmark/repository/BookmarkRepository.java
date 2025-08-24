@@ -49,4 +49,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     
     @Query("SELECT bg.iconUrl FROM BookmarkGroup bg WHERE bg.id = :groupId")
     String findIconUrlByGroupId(@Param("groupId") Long groupId);
+
+    @Query("SELECT b.store.id FROM Bookmark b WHERE b.group.id = :groupId")
+    List<Long> findStoreIdsByGroupId(@Param("groupId") Long groupId);
 }
