@@ -4,6 +4,7 @@ import com.yong2gether.ywave.global.domain.BaseTime;
 import com.yong2gether.ywave.store.domain.Store;
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,11 +31,17 @@ public class Review extends BaseTime {
     @Column(nullable = false)
     private Double rating;
 
-    @ElementCollection
-    @CollectionTable(
-            name = "review_image_urls",
-            joinColumns = @JoinColumn(name = "review_id")
-    )
-    @Column(name = "image_url", length = 500)
-    private List<String> imageUrls;
+    // DB에 저장하지 않고 메모리에서만 관리
+    @Transient
+    private List<String> imageUrls = new ArrayList<>();
+
+    public void addImageUrl(String url) {
+        if (imageUrls.size() < 5) {
+            imageUrls.add(url);
+        }
+    }
+
+    public void clearImages() {
+        imageUrls.clear();
+    }
 }
