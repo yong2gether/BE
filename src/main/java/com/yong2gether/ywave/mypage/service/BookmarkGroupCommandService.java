@@ -3,6 +3,7 @@ package com.yong2gether.ywave.mypage.service;
 
 import com.yong2gether.ywave.bookmark.domain.BookmarkGroup;
 import com.yong2gether.ywave.bookmark.repository.BookmarkGroupRepository;
+import com.yong2gether.ywave.bookmark.repository.BookmarkRepository;
 import com.yong2gether.ywave.user.domain.User;
 import com.yong2gether.ywave.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookmarkGroupCommandService {
 
     private final BookmarkGroupRepository groupRepo;
+    private final BookmarkRepository bookmarkRepo;
     private final UserRepository userRepo;
 
     @Transactional
@@ -46,4 +48,22 @@ public class BookmarkGroupCommandService {
     public static class DuplicateGroupNameException extends RuntimeException {
         public DuplicateGroupNameException(String message) { super(message); }
     }
+
+    @Transactional
+    public void deleteGroup(Long userId, Long groupId) {
+        BookmarkGroup group = groupRepo.findById(groupId)
+                .orElseThrow(GroupNotFoundException::new);
+        if (!group.getUser().getId().equals(userId)) {
+            throw new NotOwnerOfGroupException();
+        }
+        if (group.isDefault()) {
+            throw new CannotDeleteDefaultGroupException();
+        }
+        bookmarkRepo.deleteByGroup_Id(groupId);
+        groupRepo.delete(group);
+    }
+
+    public static class GroupNotFoundException extends RuntimeException {}
+    public static class NotOwnerOfGroupException extends RuntimeException {}
+    public static class CannotDeleteDefaultGroupException extends RuntimeException {}
 }
