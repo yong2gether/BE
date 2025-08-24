@@ -25,9 +25,7 @@ public class BookmarkService {
     @PersistenceContext
     private EntityManager em;
 
-    /**
-     * 북마크 생성 (groupId가 null이면 기본 그룹 자동 생성/할당)
-     */
+    /** 북마크 생성 (groupId가 null이면 기본 그룹 자동 생성/할당) */
     @Transactional
     public Long create(Long userId, Long storeId, Long groupId) {
         // 1) 중복 방지 (유저+매장)
@@ -40,7 +38,7 @@ public class BookmarkService {
         // 2) 그룹 결정
         BookmarkGroup group = resolveGroup(userId, groupId);
 
-        // 3) 연관 엔티티 프록시 참조 확보
+        // 3) 연관 엔티티 프록시 참조 확보 (불필요한 select 방지)
         User userRef = em.getReference(User.class, userId);
         Store storeRef = em.getReference(Store.class, storeId);
 
@@ -49,10 +47,7 @@ public class BookmarkService {
         return saved.getId();
     }
 
-    /**
-     * 북마크 취소
-     * - 존재하지 않으면 조용히 성공 처리(204)하는 정책. 필요하면 예외로 바꿔도 됨.
-     */
+    /** 북마크 취소 (없어도 조용히 성공 처리 정책) */
     @Transactional
     public void delete(Long userId, Long storeId) {
         if (!bookmarkRepository.existsByUser_IdAndStore_Id(userId, storeId)) {
@@ -61,9 +56,7 @@ public class BookmarkService {
         bookmarkRepository.deleteByUser_IdAndStore_Id(userId, storeId);
     }
 
-    /**
-     * groupId가 있으면 소유자 검증 뒤 사용, 없으면 기본 그룹 조회/생성
-     */
+    /** groupId가 있으면 소유자 검증 뒤 사용, 없으면 기본 그룹 조회/생성 */
     private BookmarkGroup resolveGroup(Long userId, Long groupId) {
         if (groupId != null) {
             return bookmarkGroupRepository.findByIdAndUser_Id(groupId, userId)
@@ -71,14 +64,12 @@ public class BookmarkService {
         }
         // 기본 그룹 조회 or 생성
         return bookmarkGroupRepository.findByUser_IdAndName(userId, DEFAULT_GROUP_NAME)
-                .orElseGet(() ->
-                        bookmarkGroupRepository.save(
-                                BookmarkGroup.create(
-                                        em.getReference(User.class, userId),
-                                        DEFAULT_GROUP_NAME,
-                                        true
-                                )
+                .orElseGet(() -> bookmarkGroupRepository.save(
+                        BookmarkGroup.create(
+                                em.getReference(User.class, userId),
+                                DEFAULT_GROUP_NAME,
+                                true
                         )
-                );
+                ));
     }
 }

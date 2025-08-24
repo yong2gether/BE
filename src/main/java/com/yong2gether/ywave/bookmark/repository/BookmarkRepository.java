@@ -66,7 +66,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     /** (그룹 화면 등) 유저의 특정 그룹에 속한 북마크 목록 - 최신순 */
     List<Bookmark> findByUser_IdAndGroup_IdOrderByCreatedAtDesc(Long userId, Long groupId);
 
-    /** 그룹 아이콘 URL 조회 (리스트/상세 화면 보조용) */
+    /** 그룹 아이콘 URL 조회 (보조용) */
     @Query("select bg.iconUrl from BookmarkGroup bg where bg.id = :groupId")
     String findIconUrlByGroupId(@Param("groupId") Long groupId);
 
