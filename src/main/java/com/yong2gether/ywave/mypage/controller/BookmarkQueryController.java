@@ -117,6 +117,31 @@ public class BookmarkQueryController {
         return ResponseEntity.ok(DeleteBookmarkGroupResponse.ok(request.groupId()));
     }
 
+    @Operation(summary="특정 그룹 북마크 상세 조회",
+            description="내부 인증된 사용자 기준으로 특정 그룹의 북마크 상세 정보를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode="200", description="조회 성공"),
+            @ApiResponse(responseCode="403", description="권한 없음"),
+            @ApiResponse(responseCode="404", description="그룹 없음")
+    })
+    @GetMapping("/bookmarks/{groupId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<BookmarkGroupDetailResponse> getBookmarkGroupDetail(
+            Authentication authentication,
+            @PathVariable Long groupId
+    ) {
+        String email = (authentication != null ? authentication.getName() : null);
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증 필요");
+        }
+        Long userId = userRepository.findByEmail(email)
+                .map(u -> u.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자 정보를 찾을 수 없습니다."));
+
+        BookmarkGroupDetailDto groupDetail = bookmarkQueryService.getBookmarkGroupDetail(userId, groupId);
+        return ResponseEntity.ok(BookmarkGroupDetailResponse.success(groupDetail));
+    }
+
     @Operation(summary="북마크 그룹 수정",
             description="내부 인증된 사용자 기준으로 북마크 그룹 이름을 수정합니다.")
     @ApiResponses({
