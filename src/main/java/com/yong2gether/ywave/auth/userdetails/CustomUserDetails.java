@@ -12,6 +12,7 @@ import java.util.Collection;
 public class CustomUserDetails implements UserDetails {
 
     private final User user;
+    public Long getId() {return user != null ? user.getId() : null; }
     public CustomUserDetails(User user) { this.user = user; }
 
     @Override public Collection<? extends GrantedAuthority> getAuthorities() {

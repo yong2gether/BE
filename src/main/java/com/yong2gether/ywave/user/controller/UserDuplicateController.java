@@ -3,6 +3,7 @@ package com.yong2gether.ywave.user.controller;
 import com.yong2gether.ywave.user.dto.EmailDuplicateRequest;
 import com.yong2gether.ywave.user.dto.EmailDuplicateResponse;
 import com.yong2gether.ywave.user.service.UserDuplicateService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ public class UserDuplicateController {
 
     private final UserDuplicateService duplicateService;
 
+    @Operation(summary = "이메일 중복 확인 API")
     @PostMapping("/email")
     public ResponseEntity<EmailDuplicateResponse> checkEmail(
             @Valid @RequestBody EmailDuplicateRequest request

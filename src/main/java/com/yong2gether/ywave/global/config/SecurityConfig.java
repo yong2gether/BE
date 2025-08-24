@@ -97,9 +97,9 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         // Origin은 뒤에 슬래시(/) 없이, 필요한 도메인만 명시
         config.setAllowedOriginPatterns(List.of(
-                "http://localhost:3000",
                 "http://localhost:8080",
                 "https://ywave.site",
+                "http://localhost:5173",
                 "https://ywave-beta.vercel.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

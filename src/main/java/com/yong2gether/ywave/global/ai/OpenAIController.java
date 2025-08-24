@@ -16,7 +16,7 @@ import java.util.*;
 @RequestMapping("/api/v1/ai")
 public class OpenAIController {
 
-    private static final String MODEL = "gpt-5-mini"; // ← 모델 고정
+    private static final String MODEL = "gpt-5-mini"; // 모델 고정
 
     private final Optional<AiClient> aiClientOpt;
 

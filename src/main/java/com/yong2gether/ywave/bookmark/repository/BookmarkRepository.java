@@ -44,4 +44,6 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     List<BookmarkFlatView> findAllGroupsWithStores(@Param("userId") Long userId);
 
     void deleteByGroup_Id(Long groupId);
+    //북마크 여부 판단
+    boolean existsByUser_IdAndStore_Id(Long userId, Long storeId);
 }
