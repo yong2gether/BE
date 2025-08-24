@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
+@Setter // 마이페이지에서 setName/setIconUrl 호출함 → 필요
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -15,7 +16,6 @@ import lombok.*;
         name = "bookmark_group",
         schema = "core",
         uniqueConstraints = {
-                // 같은 유저가 같은 이름의 그룹을 중복 생성하지 못하도록 제약
                 @UniqueConstraint(name = "uq_bookmark_group_user_name", columnNames = {"user_id", "name"})
         },
         indexes = {
@@ -24,24 +24,23 @@ import lombok.*;
 )
 public class BookmarkGroup extends BaseTime {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 어떤 유저의 그룹인지
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // 그룹 이름 (ex. 기본, 카페, 맛집 등)
     @Column(nullable = false, length = 100)
     private String name;
 
-    // 기본 그룹 여부
+    // 마이페이지 코드에서 사용 (builder.iconUrl(...), getIconUrl(), setIconUrl(...))
+    @Column(name = "icon_url")
+    private String iconUrl;
+
     @Column(name = "is_default", nullable = false)
     private boolean isDefault;
 
-    /** 편의 생성자 */
     public static BookmarkGroup create(User user, String name, boolean isDefault) {
         return BookmarkGroup.builder()
                 .user(user)

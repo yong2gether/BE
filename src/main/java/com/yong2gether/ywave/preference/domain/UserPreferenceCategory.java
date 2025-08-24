@@ -17,7 +17,14 @@ import static jakarta.persistence.GenerationType.IDENTITY;
         name = "preference_category",
         schema = "core",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_pref_user_category", columnNames = {"user_id", "category_id"})
+                @UniqueConstraint(
+                        name = "uk_pref_user_category",
+                        columnNames = {"user_id", "category_id"}
+                )
+        },
+        indexes = {
+                @Index(name = "ix_preference_category_user_id", columnList = "user_id"),
+                @Index(name = "ix_preference_category_category_id", columnList = "category_id")
         }
 )
 public class UserPreferenceCategory {

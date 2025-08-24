@@ -47,10 +47,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     """, nativeQuery = true)
     List<BookmarkFlatView> findAllGroupsWithStores(@Param("userId") Long userId);
 
-    /**
-     * (생성 전) 유저가 해당 매장을 이미 북마크했는지 여부
-     * - 연관관계 필드명 기준: user.id, store.id
-     */
+    void deleteByGroup_Id(Long groupId);
+    //북마크 여부 판단
     boolean existsByUser_IdAndStore_Id(Long userId, Long storeId);
 
     /**
@@ -69,4 +67,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
      * (그룹 화면 등) 유저의 특정 그룹에 속한 북마크 목록 - 최신순
      */
     List<Bookmark> findByUser_IdAndGroup_IdOrderByCreatedAtDesc(Long userId, Long groupId);
+
+    @Query("SELECT bg.iconUrl FROM BookmarkGroup bg WHERE bg.id = :groupId")
+    String findIconUrlByGroupId(@Param("groupId") Long groupId);
 }
