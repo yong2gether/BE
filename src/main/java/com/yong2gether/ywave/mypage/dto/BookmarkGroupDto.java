@@ -7,5 +7,6 @@ public record BookmarkGroupDto(
         Long groupId,
         String groupName,
         boolean isDefault,
+        String iconUrl,
         List<BookmarkedStoreDto> stores
 ) {}

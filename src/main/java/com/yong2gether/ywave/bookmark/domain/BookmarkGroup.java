@@ -28,6 +28,9 @@ public class BookmarkGroup extends BaseTime {
     @Builder.Default
     @Column(name = "is_default", nullable = false)
     private boolean isDefault = false;
+    
+    @Column(name = "icon_url", length = 500)
+    private String iconUrl;
 }
 
 
