@@ -1,5 +1,6 @@
 package com.yong2gether.ywave.preference.domain;
 
+import com.yong2gether.ywave.store.domain.Category;
 import com.yong2gether.ywave.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,8 +15,9 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Entity
 @Table(
         name = "preference_category",
+        schema = "core",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_pref_user_category", columnNames = {"user_id", "category"})
+                @UniqueConstraint(name = "uk_pref_user_category", columnNames = {"user_id", "category_id"})
         }
 )
 public class UserPreferenceCategory {
@@ -24,19 +26,19 @@ public class UserPreferenceCategory {
     private Long id;
 
     @ManyToOne(fetch = LAZY, optional = false)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category", nullable = false, length = 30)
-    private CategoryType category;
+    @ManyToOne(fetch = LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
-    private UserPreferenceCategory(User user, CategoryType category) {
+    private UserPreferenceCategory(User user, Category category) {
         this.user = user;
         this.category = category;
     }
 
-    public static UserPreferenceCategory of(User user, CategoryType category) {
+    public static UserPreferenceCategory of(User user, Category category) {
         return new UserPreferenceCategory(user, category);
     }
 }

@@ -1,9 +1,10 @@
 package com.yong2gether.ywave.preference.service;
 
-import com.yong2gether.ywave.preference.domain.CategoryType;
 import com.yong2gether.ywave.preference.domain.UserPreferenceCategory;
 import com.yong2gether.ywave.preference.dto.MessageResponse;
 import com.yong2gether.ywave.preference.repository.UserPreferenceCategoryRepository;
+import com.yong2gether.ywave.store.domain.Category;
+import com.yong2gether.ywave.store.repository.CategoryRepository;
 import com.yong2gether.ywave.user.domain.User;
 import com.yong2gether.ywave.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,43 +20,79 @@ public class PreferenceCategoryService {
 
     private final UserPreferenceCategoryRepository repository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
+    /**
+     * 선호 카테고리 설정 (카테고리 ID 목록 기반)
+     * - 최소 1개, 최대 10개
+     * - 기존에 있던 것 중 선택되지 않은 건 삭제, 새로 선택된 것만 추가
+     */
     @Transactional
-    public MessageResponse setCategories(Long userId, List<String> categoryNames) {
+    public MessageResponse setCategories(Long userId, List<Long> categoryIds) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        if (categoryNames == null || categoryNames.isEmpty()) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
             throw new IllegalArgumentException("최소 1개 이상의 카테고리를 선택해주세요.");
         }
-        if (categoryNames.size() > 10) {
+        // 중복 제거
+        Set<Long> targets = categoryIds.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (targets.size() > 10) {
             throw new IllegalArgumentException("카테고리는 최대 10개까지 선택 가능합니다.");
         }
 
-        // 중복 제거 + Enum 변환
-        Set<CategoryType> targets = categoryNames.stream()
-                .filter(Objects::nonNull)
-                .map(CategoryType::from)
-                .collect(Collectors.toCollection(() -> EnumSet.noneOf(CategoryType.class)));
-
-        // 기존 중에서 선택되지 않은 건 삭제
-        repository.deleteByUser_IdAndCategoryNotIn(userId, targets);
-
-        // 없는 것만 추가
-        for (CategoryType ct : targets) {
-            if (!repository.existsByUser_IdAndCategory(userId, ct)) {
-                repository.save(UserPreferenceCategory.of(user, ct));
-            }
+        // 유효한 카테고리인지 확인
+        List<Category> categories = categoryRepository.findAllById(targets);
+        if (categories.size() != targets.size()) {
+            throw new IllegalArgumentException("유효하지 않은 카테고리 ID가 포함되어 있습니다.");
         }
+        Map<Long, Category> categoryById = categories.stream()
+                .collect(Collectors.toMap(Category::getId, c -> c));
+
+        // 기존 선호 목록
+        List<UserPreferenceCategory> existing = repository.findByUser_Id(userId);
+        Set<Long> existingIds = existing.stream()
+                .map(upc -> upc.getCategory().getId())
+                .collect(Collectors.toSet());
+
+        // 삭제 대상 = 기존 - 신규
+        List<UserPreferenceCategory> toDelete = existing.stream()
+                .filter(upc -> !targets.contains(upc.getCategory().getId()))
+                .toList();
+
+        // 추가 대상 = 신규 - 기존
+        List<UserPreferenceCategory> toAdd = targets.stream()
+                .filter(id -> !existingIds.contains(id))
+                .map(id -> UserPreferenceCategory.of(user, categoryById.get(id)))
+                .toList();
+
+        if (!toDelete.isEmpty()) repository.deleteAllInBatch(toDelete);
+        if (!toAdd.isEmpty()) repository.saveAll(toAdd);
 
         return new MessageResponse("선호 카테고리가 성공적으로 저장되었습니다.");
     }
 
+    /**
+     * 사용자의 선호 카테고리 이름 리스트 반환
+     * (필요에 따라 id+name DTO로 바꿔도 됨)
+     */
     @Transactional(readOnly = true)
     public List<String> getCategories(Long userId) {
-        return repository.findByUser_Id(userId)
-                .stream()
-                .map(pc -> pc.getCategory().kor())
+        return repository.findByUser_Id(userId).stream()
+                .map(upc -> upc.getCategory().getName()) // Category 마스터의 name 컬럼 기준
+                .toList();
+    }
+
+    // 필요하다면 ID+이름 같이 내려주는 버전
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getCategoryPairs(Long userId) {
+        return repository.findByUser_Id(userId).stream()
+                .map(upc -> Map.<String, Object>of(
+                        "id", upc.getCategory().getId(),
+                        "name", upc.getCategory().getName()))
                 .toList();
     }
 }

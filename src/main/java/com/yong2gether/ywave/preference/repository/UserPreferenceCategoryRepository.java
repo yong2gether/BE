@@ -1,6 +1,5 @@
 package com.yong2gether.ywave.preference.repository;
 
-import com.yong2gether.ywave.preference.domain.CategoryType;
 import com.yong2gether.ywave.preference.domain.UserPreferenceCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,7 +10,6 @@ public interface UserPreferenceCategoryRepository extends JpaRepository<UserPref
 
     List<UserPreferenceCategory> findByUser_Id(Long userId);
 
-    boolean existsByUser_IdAndCategory(Long userId, CategoryType category);
+    boolean existsByUser_IdAndCategory_Id(Long userId, Long categoryId);
 
-    void deleteByUser_IdAndCategoryNotIn(Long userId, Collection<CategoryType> categories);
 }

@@ -1,5 +1,6 @@
 package com.yong2gether.ywave.auth.jwt;
 
+import com.yong2gether.ywave.auth.userdetails.CustomUserDetails;
 import com.yong2gether.ywave.user.domain.User;
 import com.yong2gether.ywave.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -7,6 +8,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.AntPathMatcher;
@@ -52,11 +55,15 @@ public class JwtFilter extends OncePerRequestFilter {
                 // DB에 실제 사용자 존재 확인. 없으면 인증 미설정.
                 Optional<User> userOpt = userRepository.findByEmail(email);
                 if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    CustomUserDetails principal = new CustomUserDetails(user);
+                    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
-                                    email,
+                                    principal,
                                     null,
-                                    Collections.emptyList()
+                                    authorities
                             );
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);

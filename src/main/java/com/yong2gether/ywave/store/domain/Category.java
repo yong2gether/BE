@@ -14,6 +14,7 @@ import java.util.Set;
 @EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "category",
+        schema = "core",
         indexes = { @Index(name = "ix_category_name", columnList = "name") })
 public class Category {
 

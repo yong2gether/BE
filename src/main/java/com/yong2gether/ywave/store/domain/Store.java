@@ -14,6 +14,9 @@ public class Store {
     @Column(nullable = false)
     private String name;
 
+    @Column(name="category")
+    private String category;
+
     private String roadAddr;
     private String lotnoAddr;
     private String sido;
@@ -47,5 +50,8 @@ public class Store {
     public void setMainPrdRaw(String mainPrdRaw) { this.mainPrdRaw = mainPrdRaw; }
     public Point getGeom() { return geom; }
     public void setGeom(Point geom) { this.geom = geom; }
+
+    public String getCategory() {return category;}
+    public void setCategory(String category) {this.category = category;}
 
 }

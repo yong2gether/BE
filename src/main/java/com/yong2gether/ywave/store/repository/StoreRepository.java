@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StoreRepository extends JpaRepository<Store, Long> {
 
-    // ---- Projections ----
     interface NearbyRow {
         Long getId();
         String getName();
@@ -37,7 +37,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
         Double getPopularity();        // = popularity_score (COALESCE로 0)
     }
 
-    // -------------------- NEARBY (거리순) --------------------
+    // NEARBY (거리순)
     @Query(value = """
         SELECT
           s.id,
@@ -75,7 +75,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             @Param("q") String q
     );
 
-    // -------------------- POPULAR (인기순) --------------------
+    // POPULAR (인기순)
     // :useCatFilter 로 필터 사용 여부를 제어 (배열 파라미터는 1회만 사용)
     @Query(value = """
         SELECT
@@ -172,4 +172,11 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
         LIMIT :limit
         """, nativeQuery = true)
     List<Store> findStoresBySignature(@Param("sig") String sig, @Param("limit") int limit);
+
+    @Query(value = """
+    SELECT COALESCE(s.category, s.category_ai, '기타') AS category
+    FROM core.stores s
+    WHERE s.id = :storeId
+    """, nativeQuery = true)
+    Optional<String> findEffectiveCategoryByStoreId(@Param("storeId") Long storeId);
 }

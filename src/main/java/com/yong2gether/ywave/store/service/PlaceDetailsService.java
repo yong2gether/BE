@@ -1,12 +1,13 @@
 package com.yong2gether.ywave.store.service;
 
-import com.yong2gether.ywave.mypage.service.BookmarkQueryService;
+import com.yong2gether.ywave.bookmark.repository.BookmarkRepository;
 import com.yong2gether.ywave.store.domain.Store;
 import com.yong2gether.ywave.store.domain.StorePlaceMapping;
 import com.yong2gether.ywave.store.dto.PlaceDetailsDto;
 import com.yong2gether.ywave.store.repository.StorePlaceMappingRepository;
 import com.yong2gether.ywave.store.repository.StoreRepository;
 import org.locationtech.jts.geom.Point;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,18 +22,26 @@ public class PlaceDetailsService {
     private final StorePlaceMappingRepository mappingRepository;
     private final PlacesClient placesClient;
 
+    // 북마크 여부 계산(없으면 무시)
+    private final ObjectProvider<BookmarkRepository> bookmarkRepositoryProvider;
+
     public PlaceDetailsService(StoreRepository storeRepository,
                                StorePlaceMappingRepository mappingRepository,
-                               PlacesClient placesClient) {
+                               PlacesClient placesClient,
+                               ObjectProvider<BookmarkRepository> bookmarkRepositoryProvider) {
         this.storeRepository = storeRepository;
         this.mappingRepository = mappingRepository;
         this.placesClient = placesClient;
+        this.bookmarkRepositoryProvider = bookmarkRepositoryProvider;
     }
 
-    public PlaceDetailsDto getDetailsByStoreId(Long storeId) {
+
+    // 로그인 사용자로 호출 시 userId 전달하면 북마크 플래그 세팅됨
+    public PlaceDetailsDto getDetailsByStoreId(Long storeId, Long userId) {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "store not found"));
 
+        // 1) placeId 매핑(예전 로직 그대로)
         Optional<StorePlaceMapping> mapped = mappingRepository.findFirstByStoreIdOrderByConfidenceDesc(storeId);
         String placeId = mapped.map(StorePlaceMapping::getPlaceId)
                 .orElseGet(() -> autoMapPlaceId(store));
@@ -40,17 +49,39 @@ public class PlaceDetailsService {
         if (placeId == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "placeId mapping failed");
         }
-        return getDetailsByPlaceId(placeId);
-    }
 
-    public PlaceDetailsDto getDetailsByPlaceId(String placeId) {
-        PlaceDetailsDto dto = placesClient.getPlaceDetails(placeId);
-        if (dto == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "place details not found");
+        // 2) Google Details 그대로 가져오기(예전처럼, 실패 시 404)
+        PlaceDetailsDto dto = getDetailsByPlaceId(placeId);
+
+        // 3) category/북마크 추가
+        String category = storeRepository.findEffectiveCategoryByStoreId(storeId).orElse(null);
+        dto.setCategory((category != null && !category.isBlank()) ? category : "기타");
+
+        boolean bookmarked = false;
+        if (userId != null) {
+            BookmarkRepository br = bookmarkRepositoryProvider.getIfAvailable();
+            if (br != null) {
+                // 해당 메서드가 레포지토리에 있어야 합니다.
+                // boolean existsByUser_IdAndStore_Id(Long userId, Long storeId);
+                bookmarked = br.existsByUser_IdAndStore_Id(userId, storeId);
+            }
+        }
+        dto.setBookmarked(bookmarked);
+
         return dto;
     }
 
+    /** 예전과 동일: 구글 실패 시 404 */
+    public PlaceDetailsDto getDetailsByPlaceId(String placeId) {
+        PlaceDetailsDto dto = placesClient.getPlaceDetails(placeId);
+        if (dto == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "place details not found");
+        }
+        return dto;
+    }
+
+    /** 예전과 동일한 자동 매핑 */
     private String autoMapPlaceId(Store store) {
-        // 이름 + 행정구 + 도로명 주소를 input으로, 위치 바이어스는 좌표 사용
         String input = buildInputText(store);
         Point p = store.getGeom();
         double lng = (p != null) ? p.getX() : 127.1;
@@ -58,7 +89,6 @@ public class PlaceDetailsService {
 
         String found = placesClient.findPlaceIdByText(input, lng, lat);
         if (found != null) {
-            // 매칭 정확도 confidence = 0.8로 설정
             StorePlaceMapping entity = new StorePlaceMapping(store.getId(), found, 0.8, OffsetDateTime.now());
             mappingRepository.save(entity);
         }
