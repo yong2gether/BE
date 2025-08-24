@@ -18,11 +18,7 @@ public class ReviewService {
 
     @Transactional
     public ReviewResponse createReview(Long userId, ReviewRequest request) {
-
-        if (request.getImageUrls() != null && request.getImageUrls().size() > 5) {
-            throw new IllegalArgumentException("이미지는 최대 5개까지만 등록 가능합니다.");
-        }
-
+        // 임시: storeId 1번 가맹점 사용
         var store = storeRepository.findById(1L)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 가맹점입니다."));
 
@@ -31,7 +27,6 @@ public class ReviewService {
                 .store(store)
                 .rating(request.getRating())
                 .content(request.getContent())
-                .imageUrls(request.getImageUrls()) // 이미지 URL 추가
                 .build();
 
         Review saved = reviewRepository.save(review);
@@ -41,7 +36,6 @@ public class ReviewService {
                 .message("리뷰가 작성되었습니다.")
                 .rating(saved.getRating())
                 .content(saved.getContent())
-                .imageUrls(saved.getImageUrls())
                 .build();
     }
 }

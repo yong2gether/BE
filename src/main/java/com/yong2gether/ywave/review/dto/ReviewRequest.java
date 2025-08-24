@@ -4,7 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
 
-@Getter @Setter
+@Getter
+@Setter
 public class ReviewRequest {
     private Double rating;
     private String content;
