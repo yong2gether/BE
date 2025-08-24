@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface BookmarkGroupRepository extends JpaRepository<BookmarkGroup, Long> {
     Optional<BookmarkGroup> findByUserIdAndIsDefaultTrue(Long userId);
     boolean existsByUserIdAndName(Long userId, String name);
+    Optional<BookmarkGroup> findByIdAndUserId(Long id, Long userId);
+    boolean existsByUserIdAndNameAndIdNot(Long userId, String name, Long id);
 }

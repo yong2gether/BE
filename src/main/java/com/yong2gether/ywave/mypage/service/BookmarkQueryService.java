@@ -33,6 +33,7 @@ public class BookmarkQueryService {
                     defaultGroup.getId(),
                     defaultGroup.getName(),
                     defaultGroup.isDefault(),
+                    defaultGroup.getIconUrl(),
                     new ArrayList<>()
             ));
         }
@@ -46,6 +47,7 @@ public class BookmarkQueryService {
                             r.getGroupId(),
                             r.getGroupName(),
                             Boolean.TRUE.equals(r.getIsDefault()),
+                            null, // iconUrl은 현재 projection에서 가져올 수 없음, 나중에 별도 조회 필요
                             new ArrayList<>()
                     )
             );
@@ -56,6 +58,22 @@ public class BookmarkQueryService {
                 ));
             }
         }
-        return new ArrayList<>(map.values());
+        
+        // 5) 각 그룹의 iconUrl을 별도로 조회하여 설정
+        List<BookmarkGroupDto> result = new ArrayList<>();
+        for (BookmarkGroupDto groupDto : map.values()) {
+            // 각 그룹의 iconUrl을 조회
+            String iconUrl = bookmarkRepository.findIconUrlByGroupId(groupDto.groupId());
+            BookmarkGroupDto updatedGroupDto = new BookmarkGroupDto(
+                    groupDto.groupId(),
+                    groupDto.groupName(),
+                    groupDto.isDefault(),
+                    iconUrl,
+                    groupDto.stores()
+            );
+            result.add(updatedGroupDto);
+        }
+        
+        return result;
     }
 }
