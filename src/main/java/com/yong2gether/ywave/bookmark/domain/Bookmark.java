@@ -30,6 +30,10 @@ public class Bookmark extends BaseTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
+
+    public static Bookmark of(User user, Store store, BookmarkGroup group) {
+        return Bookmark.builder().user(user).store(store).group(group).build();
+    }
 }
 
 

@@ -45,4 +45,5 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
     //북마크 여부 판단
     boolean existsByUser_IdAndStore_Id(Long userId, Long storeId);
+
 }
