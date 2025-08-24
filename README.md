@@ -8,7 +8,7 @@
 #### 기술스택
 ###### ⚙️ Back-End
 &nbsp; <img src="https://img.shields.io/badge/SpringBoot-6DB33F?style=flat&logo=Spring&logoColor=white">
-&nbsp;<img src="https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white">
+<img src="https://img.shields.io/badge/postgresql-4169E1?style=flat-square&logo=postgresql&logoColor=white"/></a>
 &nbsp;<img src="https://img.shields.io/badge/JWT-black?style=flat&logo=JSON%20web%20tokens&logoColor=white">
 
 ###### 🔧☁ Deployment / Infra
