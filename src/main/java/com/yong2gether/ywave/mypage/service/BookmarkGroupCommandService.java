@@ -91,6 +91,11 @@ public class BookmarkGroupCommandService {
         groupRepo.delete(group);
     }
 
+    public BookmarkGroup getGroupById(Long groupId) {
+        return groupRepo.findById(groupId)
+                .orElseThrow(GroupNotFoundException::new);
+    }
+
     public static class GroupNotFoundException extends RuntimeException {}
     public static class NotOwnerOfGroupException extends RuntimeException {}
     public static class CannotDeleteDefaultGroupException extends RuntimeException {}
