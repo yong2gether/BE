@@ -22,11 +22,6 @@ public class PreferenceCategoryService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
-    /**
-     * 선호 카테고리 설정 (카테고리 ID 목록 기반)
-     * - 최소 1개, 최대 10개
-     * - 기존에 있던 것 중 선택되지 않은 건 삭제, 새로 선택된 것만 추가
-     */
     @Transactional
     public MessageResponse setCategories(Long userId, List<Long> categoryIds) {
         User user = userRepository.findById(userId)
@@ -75,10 +70,6 @@ public class PreferenceCategoryService {
         return new MessageResponse("선호 카테고리가 성공적으로 저장되었습니다.");
     }
 
-    /**
-     * 사용자의 선호 카테고리 이름 리스트 반환
-     * (필요에 따라 id+name DTO로 바꿔도 됨)
-     */
     @Transactional(readOnly = true)
     public List<String> getCategories(Long userId) {
         return repository.findByUser_Id(userId).stream()
@@ -86,13 +77,4 @@ public class PreferenceCategoryService {
                 .toList();
     }
 
-    // 필요하다면 ID+이름 같이 내려주는 버전
-    @Transactional(readOnly = true)
-    public List<Map<String, Object>> getCategoryPairs(Long userId) {
-        return repository.findByUser_Id(userId).stream()
-                .map(upc -> Map.<String, Object>of(
-                        "id", upc.getCategory().getId(),
-                        "name", upc.getCategory().getName()))
-                .toList();
-    }
 }

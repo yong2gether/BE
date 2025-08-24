@@ -22,7 +22,6 @@ public class PlaceDetailsService {
     private final StorePlaceMappingRepository mappingRepository;
     private final PlacesClient placesClient;
 
-    // 북마크 여부 계산(없으면 무시)
     private final ObjectProvider<BookmarkRepository> bookmarkRepositoryProvider;
 
     public PlaceDetailsService(StoreRepository storeRepository,
@@ -50,7 +49,7 @@ public class PlaceDetailsService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "placeId mapping failed");
         }
 
-        // 2) Google Details 그대로 가져오기(예전처럼, 실패 시 404)
+        // 2) Google Details 그대로 가져오기
         PlaceDetailsDto dto = getDetailsByPlaceId(placeId);
 
         // 3) category/북마크 추가
@@ -61,8 +60,6 @@ public class PlaceDetailsService {
         if (userId != null) {
             BookmarkRepository br = bookmarkRepositoryProvider.getIfAvailable();
             if (br != null) {
-                // 해당 메서드가 레포지토리에 있어야 합니다.
-                // boolean existsByUser_IdAndStore_Id(Long userId, Long storeId);
                 bookmarked = br.existsByUser_IdAndStore_Id(userId, storeId);
             }
         }
@@ -71,7 +68,6 @@ public class PlaceDetailsService {
         return dto;
     }
 
-    /** 예전과 동일: 구글 실패 시 404 */
     public PlaceDetailsDto getDetailsByPlaceId(String placeId) {
         PlaceDetailsDto dto = placesClient.getPlaceDetails(placeId);
         if (dto == null) {
@@ -80,7 +76,6 @@ public class PlaceDetailsService {
         return dto;
     }
 
-    /** 예전과 동일한 자동 매핑 */
     private String autoMapPlaceId(Store store) {
         String input = buildInputText(store);
         Point p = store.getGeom();
