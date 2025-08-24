@@ -43,4 +43,12 @@ public class UserPreferenceRegion {
     public static UserPreferenceRegion of(User user, String sido, String sigungu, String dong, Double lat, Double lng) {
         return new UserPreferenceRegion(user, sido, sigungu, dong, lat, lng);
     }
+
+    public void changeTo(String sido, String sigungu, String dong, Double lat, Double lng) {
+        this.sido = sido;
+        this.sigungu = sigungu;
+        this.dong = dong;
+        this.lat = lat;
+        this.lng = lng;
+    }
 }

@@ -49,4 +49,37 @@ public interface RegionCenterRepository extends JpaRepository<RegionCenter, Long
                 @Param("dong") String dong,
                 @Param("lat") Double lat,
                 @Param("lng") Double lng);
+
+    @Query(value = """
+  SELECT lat, lng
+  FROM core.region_center
+  WHERE replace(sido,' ','') = replace(:sido,' ','')
+    AND (
+      replace(sigungu,' ','') = replace(:sigungu,' ','')
+      OR replace(:sigungu,' ','') LIKE replace(sigungu,' ','') || '%'
+      OR replace(sigungu,' ','') LIKE replace(:sigungu,' ','') || '%'
+    )
+  ORDER BY (dong='전체') DESC
+  LIMIT 1
+  """, nativeQuery = true)
+    Optional<LatLng> findCenterBySigunguLoose(@Param("sido") String sido,
+                                              @Param("sigungu") String sigungu);
+
+    @Query(value = """
+  SELECT lat, lng
+  FROM core.region_center
+  WHERE replace(sido,' ','') = replace(:sido,' ','')
+    AND (
+      ((:dong IS NULL AND dong IS NULL) OR replace(dong,' ','') = replace(:dong,' ',''))
+      AND (
+        replace(sigungu,' ','') = replace(:sigungu,' ','')
+        OR replace(:sigungu,' ','') LIKE replace(sigungu,' ','') || '%'
+        OR replace(sigungu,' ','') LIKE replace(:sigungu,' ','') || '%'
+      )
+    )
+  LIMIT 1
+  """, nativeQuery = true)
+    Optional<LatLng> findCenterLoose(@Param("sido") String sido,
+                                     @Param("sigungu") String sigungu,
+                                     @Param("dong") String dong);
 }

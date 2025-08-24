@@ -45,8 +45,8 @@ public class PreferenceRegionService {
 
         String sido = n(req.getSido());
         String sigungu = n(req.getSigungu());
-        String dongForStorage = normalizeDongForStorage(req.getDong());
-        String dongForLookup  = normalizeDongForLookup(req.getDong());
+        String dongForStorage = normalizeDongForStorage(req.getDong()); // "전체" 유지
+        String dongForLookup  = normalizeDongForLookup(req.getDong());  // 조회용 null 변환
 
         if (!ONLY_SIDO.equals(sido)) {
             throw new IllegalArgumentException("경기도 내 지역만 설정할 수 있습니다.");
@@ -55,28 +55,30 @@ public class PreferenceRegionService {
             throw new IllegalArgumentException("시/군/구는 필수입니다.");
         }
 
+        // 이미 같은 값이면 DB 쓰기 없이 바로 반환
         var existingOpt = repository.findOneByUser_Id(userId);
         if (existingOpt.isPresent()) {
             var existing = existingOpt.get();
             if (Objects.equals(existing.getSido(), sido)
                     && Objects.equals(existing.getSigungu(), sigungu)
                     && Objects.equals(existing.getDong(), dongForStorage)) {
-                // 좌표까지 이미 있으면 바로 반환
                 return new RegionResponse(existing.getSido(), existing.getSigungu(),
                         existing.getDong(), existing.getLat(), existing.getLng());
             }
         }
 
-        // 좌표 계산: dong 정확매칭 → 시군구 대표(=dong IS NULL 우선)
+        // 여기서 필요한 경우에만 좌표 계산
         var center = centerReadService.resolve(sido, sigungu, dongForLookup)
                 .orElseThrow(() -> new IllegalArgumentException("해당 지역의 센터 좌표를 찾을 수 없습니다."));
-
         Double lat = center.getLat();
         Double lng = center.getLng();
 
-        // 사용자당 1개만 유지: 기존 삭제 후 저장
-        repository.deleteByUser_Id(userId);
-        repository.save(UserPreferenceRegion.of(user, sido, sigungu, dongForStorage, lat, lng));
+        if (existingOpt.isPresent()) {
+            // 삭제 없이 업데이트
+            existingOpt.get().changeTo(sido, sigungu, dongForStorage, lat, lng);
+        } else {
+            repository.save(UserPreferenceRegion.of(user, sido, sigungu, dongForStorage, lat, lng));
+        }
 
         return new RegionResponse(sido, sigungu, dongForStorage, lat, lng);
     }
