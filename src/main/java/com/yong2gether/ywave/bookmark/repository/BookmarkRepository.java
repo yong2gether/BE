@@ -58,10 +58,10 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     /** (중복일 때 기존 엔티티 필요 시) 유저+매장 단건 조회 */
     Optional<Bookmark> findByUser_IdAndStore_Id(Long userId, Long storeId);
 
-    /** (취소) 유저+매장 기준으로 삭제 */
+    /** (취소) 유저+매장 기준으로 삭제 → 영향 행 수 반환(200+JSON 응답용) */
     @Transactional
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    void deleteByUser_IdAndStore_Id(Long userId, Long storeId);
+    int deleteByUser_IdAndStore_Id(Long userId, Long storeId);
 
     /** (그룹 화면 등) 유저의 특정 그룹에 속한 북마크 목록 - 최신순 */
     List<Bookmark> findByUser_IdAndGroup_IdOrderByCreatedAtDesc(Long userId, Long groupId);

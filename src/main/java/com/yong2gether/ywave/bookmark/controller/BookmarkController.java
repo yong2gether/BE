@@ -6,11 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-// Swagger (springdoc-openapi) 문서화용
+// Swagger (springdoc-openapi)
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Tag(name = "Bookmarks", description = "북마크 생성/취소 API")
 @RestController
@@ -23,7 +25,8 @@ public class BookmarkController {
     /** 북마크 생성 (groupId 없으면 기본 그룹) */
     @Operation(summary = "가맹점 북마크 생성", description = "헤더 X-USER-ID, Path storeId. body에 groupId 없으면 기본 그룹으로 저장")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "생성 성공")
+            @ApiResponse(responseCode = "201", description = "생성 성공",
+                    content = @Content(schema = @Schema(implementation = CreateRes.class)))
     })
     @PostMapping
     public ResponseEntity<CreateRes> create(
@@ -40,20 +43,30 @@ public class BookmarkController {
                 .body(new CreateRes(bookmarkId, storeId));
     }
 
-    /** 북마크 취소 (문서화해서 Swagger에 Undocumented 안 뜨게) */
+    /** 북마크 취소 → 200 OK + JSON 본문 반환 */
     @Operation(summary = "가맹점 북마크 취소", description = "헤더 X-USER-ID, Path storeId")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "삭제 성공")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "삭제 결과 반환",
+                    content = @Content(schema = @Schema(implementation = DeleteRes.class))
+            )
     })
     @DeleteMapping
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<DeleteRes> delete(
             @RequestHeader("X-USER-ID") Long userId,
             @PathVariable Long storeId
     ) {
-        bookmarkService.delete(userId, storeId);
-        return ResponseEntity.noContent().build();
+        boolean deleted = bookmarkService.delete(userId, storeId); // 서비스가 boolean 반환하도록 되어 있어야 함
+        return ResponseEntity.ok(new DeleteRes(storeId, deleted));
     }
 
+    // ====== DTOs ======
     public record CreateReq(Long groupId) {}
     public record CreateRes(Long bookmarkId, Long storeId) {}
+
+    public record DeleteRes(
+            @Schema(description = "가맹점 ID") Long storeId,
+            @Schema(description = "삭제 여부 (이미 없었으면 false)") boolean deleted
+    ) {}
 }

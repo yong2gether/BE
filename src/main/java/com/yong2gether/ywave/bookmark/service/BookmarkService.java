@@ -47,13 +47,15 @@ public class BookmarkService {
         return saved.getId();
     }
 
-    /** 북마크 취소 (없어도 조용히 성공 처리 정책) */
+    /**
+     * 북마크 취소
+     * - 삭제된 행 수를 기반으로 true/false 반환 (프론트에서 결과 표시하기 좋음)
+     * - 사전 존재 여부 조회 없이 바로 delete → 성능/레이스컨디션에 유리
+     */
     @Transactional
-    public void delete(Long userId, Long storeId) {
-        if (!bookmarkRepository.existsByUser_IdAndStore_Id(userId, storeId)) {
-            return;
-        }
-        bookmarkRepository.deleteByUser_IdAndStore_Id(userId, storeId);
+    public boolean delete(Long userId, Long storeId) {
+        int affected = bookmarkRepository.deleteByUser_IdAndStore_Id(userId, storeId);
+        return affected > 0;
     }
 
     /** groupId가 있으면 소유자 검증 뒤 사용, 없으면 기본 그룹 조회/생성 */
