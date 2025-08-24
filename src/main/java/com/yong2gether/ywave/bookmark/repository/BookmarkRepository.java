@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-// src/main/java/com/yong2gether/ywave/bookmark/repository/BookmarkRepository.java
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
     @Query(value = """
@@ -36,14 +35,23 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
         left join core.stores   s on s.id = b.store_id
       where g.user_id = :userId
       order by 
-        g.is_default desc,           -- 기본 그룹 우선
-        g.created_at asc,            -- 그 외 그룹은 생성순
-        b.created_at desc nulls last,-- 그룹 내 매장은 최신 북마크순
-        s.name asc                   -- 동순위 보정
+        g.is_default desc,           
+        g.created_at asc,            
+        b.created_at desc nulls last,
+        s.name asc                   
     """, nativeQuery = true)
     List<BookmarkFlatView> findAllGroupsWithStores(@Param("userId") Long userId);
 
-    //북마크 여부 판단
     boolean existsByUser_IdAndStore_Id(Long userId, Long storeId);
 
+    long deleteByUser_IdAndStore_Id(Long userId, Long storeId);
+
+    @Query(value = """
+        select coalesce(g.icon_url, '')
+        from core.bookmark_group g
+        where g.id = :groupId
+        """, nativeQuery = true)
+    String findIconUrlByGroupId(@Param("groupId") Long groupId);
+
+    long deleteByGroup_Id(Long groupId);
 }

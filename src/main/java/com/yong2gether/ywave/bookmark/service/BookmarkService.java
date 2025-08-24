@@ -24,6 +24,7 @@ public class BookmarkService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
 
+
     public Long create(Long userId, Long storeId, Long groupId) {
         if (bookmarkRepository.existsByUser_IdAndStore_Id(userId, storeId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 북마크된 가맹점입니다.");
@@ -37,6 +38,21 @@ public class BookmarkService {
         bookmarkRepository.save(bookmark);
         return bookmark.getId();
     }
+
+
+    public void deleteByUserAndStore(Long userId, Long storeId) {
+        bookmarkRepository.deleteByUser_IdAndStore_Id(userId, storeId);
+    }
+
+    /*
+    public void deleteByUserAndStore(Long userId, Long storeId) {
+        long affected = bookmarkRepository.deleteByUser_IdAndStore_Id(userId, storeId);
+        if (affected == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "북마크를 찾을 수 없습니다.");
+        }
+    }
+    */
+
 
     private BookmarkGroup resolveGroup(User user, Long groupId) {
         if (groupId != null) {
@@ -52,8 +68,11 @@ public class BookmarkService {
                         BookmarkGroup.builder().user(user).name("기본").isDefault(true).build()
                 ));
     }
+
+
+    @Transactional(readOnly = true)
     public boolean isBookmarked(Long userId, Long storeId) {
-        if(userId == null) return false;
+        if (userId == null) return false;
         return bookmarkRepository.existsByUser_IdAndStore_Id(userId, storeId);
     }
 }
