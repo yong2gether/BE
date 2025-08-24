@@ -42,4 +42,6 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
         s.name asc                   -- 동순위 보정
     """, nativeQuery = true)
     List<BookmarkFlatView> findAllGroupsWithStores(@Param("userId") Long userId);
+
+    void deleteByGroup_Id(Long groupId);
 }
