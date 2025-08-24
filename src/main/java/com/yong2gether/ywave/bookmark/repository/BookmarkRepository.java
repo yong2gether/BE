@@ -47,30 +47,30 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     """, nativeQuery = true)
     List<BookmarkFlatView> findAllGroupsWithStores(@Param("userId") Long userId);
 
-    void deleteByGroup_Id(Long groupId);
-    //북마크 여부 판단
-    boolean existsByUser_IdAndStore_Id(Long userId, Long storeId);
-
-    /**
-     * (중복일 때 기존 엔티티 필요 시) 유저+매장으로 단건 조회
-     */
-    Optional<Bookmark> findByUser_IdAndStore_Id(Long userId, Long storeId);
-
-    /**
-     * (취소) 유저+매장 기준으로 삭제
-     */
+    /** 특정 그룹에 속한 북마크 일괄 삭제 */
     @Transactional
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    void deleteByUser_IdAndStore_Id(Long userId, Long storeId);
+    void deleteByGroup_Id(Long groupId);
 
-    /**
-     * (그룹 화면 등) 유저의 특정 그룹에 속한 북마크 목록 - 최신순
-     */
+    /** 북마크 여부 판단 (유저+매장) */
+    boolean existsByUser_IdAndStore_Id(Long userId, Long storeId);
+
+    /** (중복일 때 기존 엔티티 필요 시) 유저+매장 단건 조회 */
+    Optional<Bookmark> findByUser_IdAndStore_Id(Long userId, Long storeId);
+
+    /** (취소) 유저+매장 기준으로 삭제 → 영향 행 수 반환(200+JSON 응답용) */
+    @Transactional
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    int deleteByUser_IdAndStore_Id(Long userId, Long storeId);
+
+    /** (그룹 화면 등) 유저의 특정 그룹에 속한 북마크 목록 - 최신순 */
     List<Bookmark> findByUser_IdAndGroup_IdOrderByCreatedAtDesc(Long userId, Long groupId);
 
-    @Query("SELECT bg.iconUrl FROM BookmarkGroup bg WHERE bg.id = :groupId")
+    /** 그룹 아이콘 URL 조회 (보조용) */
+    @Query("select bg.iconUrl from BookmarkGroup bg where bg.id = :groupId")
     String findIconUrlByGroupId(@Param("groupId") Long groupId);
 
-    @Query("SELECT b.store.id FROM Bookmark b WHERE b.group.id = :groupId")
+    /** 그룹에 포함된 매장 ID들 조회 */
+    @Query("select b.store.id from Bookmark b where b.group.id = :groupId")
     List<Long> findStoreIdsByGroupId(@Param("groupId") Long groupId);
 }
