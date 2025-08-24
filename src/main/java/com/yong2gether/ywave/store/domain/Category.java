@@ -1,6 +1,6 @@
 package com.yong2gether.ywave.store.domain;
 
-import com.yong2gether.ywave.user.domain.PreferenceCategory;
+import com.yong2gether.ywave.preference.domain.UserPreferenceCategory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +27,6 @@ public class Category {
     // 역방향 필요 시만 유지 (API 단순화 원하면 생략 가능)
     @OneToMany(mappedBy = "category")
     @Builder.Default
-    private Set<PreferenceCategory> userLinks = new HashSet<>();
+    private Set<UserPreferenceCategory> userLinks = new HashSet<>();
 }
 
