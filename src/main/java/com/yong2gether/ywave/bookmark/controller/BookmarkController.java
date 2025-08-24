@@ -15,15 +15,18 @@ public class BookmarkController {
     @PostMapping
     public ResponseEntity<CreateRes> create(
             @RequestHeader("X-USER-ID") Long userId,
-            @PathVariable Long storeId,
+            @PathVariable Long storeId,              // ★ storeId를 PathVariable로 받음
             @RequestBody(required = false) CreateReq req
     ) {
-        Long id = bookmarkService.create(userId, storeId, (req != null ? req.groupId : null));
+        Long bookmarkId = bookmarkService.create(
+                userId,
+                storeId,                              // ★ 서비스에 storeId 전달
+                (req != null ? req.groupId : null)
+        );
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new CreateRes(id, storeId, "가맹점 북마크가 생성되었습니다."));
+                .body(new CreateRes(bookmarkId, storeId));
     }
 
     public record CreateReq(Long groupId) {}
-
-    public record CreateRes(Long bookmarkId, Long storeId, String message) {}
+    public record CreateRes(Long bookmarkId, Long storeId) {}
 }
