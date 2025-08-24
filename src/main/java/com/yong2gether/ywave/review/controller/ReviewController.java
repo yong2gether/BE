@@ -3,6 +3,7 @@ package com.yong2gether.ywave.review.controller;
 import com.yong2gether.ywave.auth.userdetails.CustomUserDetails;
 import com.yong2gether.ywave.review.dto.ReviewRequest;
 import com.yong2gether.ywave.review.dto.ReviewResponse;
+import com.yong2gether.ywave.review.dto.ReviewUpdateRequest;
 import com.yong2gether.ywave.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +17,14 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @PostMapping
-    public ReviewResponse createReview(
-            @RequestBody ReviewRequest request,
+    @PutMapping("/{reviewId}")
+    public ReviewResponse updateReview(
+            @PathVariable long reviewId,
+            @RequestBody ReviewUpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         long userId = userDetails.getId();
-        return reviewService.createReview(userId, request);
+        return reviewService.updateReview(userId, reviewId, request);
     }
+
 }
