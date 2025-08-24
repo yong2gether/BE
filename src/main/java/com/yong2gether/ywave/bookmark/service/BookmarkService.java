@@ -30,7 +30,6 @@ public class BookmarkService {
      */
     @Transactional
     public Long create(Long userId, Long storeId, Long groupId) {
-
         // 1) 중복 방지 (유저+매장)
         if (bookmarkRepository.existsByUser_IdAndStore_Id(userId, storeId)) {
             return bookmarkRepository.findByUser_IdAndStore_Id(userId, storeId)
@@ -46,23 +45,31 @@ public class BookmarkService {
         Store storeRef = em.getReference(Store.class, storeId);
 
         // 4) 저장
-        Bookmark saved = bookmarkRepository.save(
-                Bookmark.of(userRef, storeRef, group)
-        );
-
+        Bookmark saved = bookmarkRepository.save(Bookmark.of(userRef, storeRef, group));
         return saved.getId();
+    }
+
+    /**
+     * 북마크 취소
+     * - 존재하지 않으면 조용히 성공 처리(204)하는 정책. 필요하면 예외로 바꿔도 됨.
+     */
+    @Transactional
+    public void delete(Long userId, Long storeId) {
+        if (!bookmarkRepository.existsByUser_IdAndStore_Id(userId, storeId)) {
+            return;
+        }
+        bookmarkRepository.deleteByUser_IdAndStore_Id(userId, storeId);
     }
 
     /**
      * groupId가 있으면 소유자 검증 뒤 사용, 없으면 기본 그룹 조회/생성
      */
     private BookmarkGroup resolveGroup(Long userId, Long groupId) {
-
         if (groupId != null) {
             return bookmarkGroupRepository.findByIdAndUser_Id(groupId, userId)
                     .orElseThrow(() -> new IllegalArgumentException("해당 그룹을 찾을 수 없습니다."));
         }
-// 기본 그룹 조회 or 생성
+        // 기본 그룹 조회 or 생성
         return bookmarkGroupRepository.findByUser_IdAndName(userId, DEFAULT_GROUP_NAME)
                 .orElseGet(() ->
                         bookmarkGroupRepository.save(
@@ -73,6 +80,5 @@ public class BookmarkService {
                                 )
                         )
                 );
-
     }
 }
