@@ -32,7 +32,7 @@ public class BookmarkGroupCommandService {
     }
 
     @Transactional
-    public BookmarkGroup createGroup(Long userId, String groupName) {
+    public BookmarkGroup createGroup(Long userId, String groupName, String iconUrl) {
         if (groupRepo.existsByUserIdAndName(userId, groupName)) {
             throw new DuplicateGroupNameException("이미 존재하는 그룹 이름입니다.");
         }
@@ -40,6 +40,7 @@ public class BookmarkGroupCommandService {
         BookmarkGroup g = BookmarkGroup.builder()
                 .user(user)
                 .name(groupName)
+                .iconUrl(iconUrl)
                 .isDefault(false)
                 .build();
         return groupRepo.save(g);
@@ -47,6 +48,33 @@ public class BookmarkGroupCommandService {
 
     public static class DuplicateGroupNameException extends RuntimeException {
         public DuplicateGroupNameException(String message) { super(message); }
+    }
+
+    @Transactional
+    public BookmarkGroup updateGroup(Long userId, Long groupId, String newGroupName, String newIconUrl) {
+        BookmarkGroup group = groupRepo.findById(groupId)
+                .orElseThrow(GroupNotFoundException::new);
+        if (!group.getUser().getId().equals(userId)) {
+            throw new NotOwnerOfGroupException();
+        }
+        if (group.isDefault()) {
+            throw new CannotUpdateDefaultGroupException();
+        }
+        
+        // 그룹 이름이 제공된 경우에만 중복 체크 및 수정
+        if (newGroupName != null && !newGroupName.isBlank()) {
+            if (groupRepo.existsByUserIdAndNameAndIdNot(userId, newGroupName, groupId)) {
+                throw new DuplicateGroupNameException("이미 존재하는 그룹 이름입니다.");
+            }
+            group.setName(newGroupName);
+        }
+        
+        // 아이콘 URL이 제공된 경우에만 수정
+        if (newIconUrl != null) {
+            group.setIconUrl(newIconUrl);
+        }
+        
+        return groupRepo.save(group);
     }
 
     @Transactional
@@ -66,4 +94,5 @@ public class BookmarkGroupCommandService {
     public static class GroupNotFoundException extends RuntimeException {}
     public static class NotOwnerOfGroupException extends RuntimeException {}
     public static class CannotDeleteDefaultGroupException extends RuntimeException {}
+    public static class CannotUpdateDefaultGroupException extends RuntimeException {}
 }
