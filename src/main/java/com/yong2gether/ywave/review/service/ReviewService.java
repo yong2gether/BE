@@ -74,4 +74,21 @@ public class ReviewService {
         // 리뷰 삭제
         reviewRepository.delete(review);
     }
+
+    // 리뷰 수정
+    @Transactional
+    public Review updateReview(Long userId, Long reviewId, ReviewRequest request) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다. reviewId: " + reviewId));
+
+        if (!review.getUserId().equals(userId)) {
+            throw new RuntimeException("작성자만 수정할 수 있습니다.");
+        }
+
+        review.setContent(request.getContent());
+        review.setRating(request.getRating());
+        review.setImgUrls(request.getImgUrls() != null ? request.getImgUrls() : new ArrayList<>());
+
+        return reviewRepository.save(review);
+    }
 }

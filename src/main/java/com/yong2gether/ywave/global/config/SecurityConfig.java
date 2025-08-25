@@ -100,7 +100,7 @@ public class SecurityConfig {
                 "http://localhost:8080",
                 "https://ywave.site",
                 "http://localhost:5173",
-                "https://ywave-beta.vercel.app"
+                "https://ywave.vercel.app/"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.addAllowedHeader("*");
