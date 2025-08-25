@@ -15,7 +15,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             r.storeId as storeId,
             r.content as content,
             r.rating as rating,
-            r.createdAt as createdAt
+            r.createdAt as createdAt,
+            r.imgUrls as imgUrls
         from Review r
         where r.userId = :userId
         order by r.createdAt desc
