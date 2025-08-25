@@ -36,7 +36,7 @@ public class User extends BaseTime {
     @Column(nullable = false, length = 40)
     private String nickname;
 
-    @Column(name = "photo_url", length = 255)
+    @Column(name = "photo_url")
     private String photoUrl;
 
     @Column(name = "is_gps_allowed", nullable = false)
