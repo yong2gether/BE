@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 public record ReviewItemDto(
         @Schema(example = "1") Long reviewId,
         @Schema(example = "123") Long storeId,
-        @Schema(example = "스타벅스") String storeName,
         @Schema(example = "커피 맛집!") String content,
         @Schema(example = "4.5") Double rating,
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")          // API 명세서와 동일
@@ -22,7 +21,6 @@ public record ReviewItemDto(
         return new ReviewItemDto(
                 v.getReviewId(),
                 v.getStoreId(),
-                v.getStoreName(),
                 v.getContent(),
                 v.getRating(),
                 v.getCreatedAt()

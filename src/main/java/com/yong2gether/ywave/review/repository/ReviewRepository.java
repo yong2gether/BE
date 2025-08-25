@@ -12,13 +12,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("""
         select 
             r.id as reviewId,
-            s.id as storeId,
-            s.name as storeName,
+            r.storeId as storeId,
             r.content as content,
             r.rating as rating,
             r.createdAt as createdAt
         from Review r
-        join r.store s
         where r.userId = :userId
         order by r.createdAt desc
     """)
