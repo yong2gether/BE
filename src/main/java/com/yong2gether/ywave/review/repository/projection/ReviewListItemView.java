@@ -3,7 +3,6 @@ package com.yong2gether.ywave.review.repository.projection;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 public interface ReviewListItemView {
     Long getReviewId();
     Long getStoreId();
@@ -11,6 +10,4 @@ public interface ReviewListItemView {
     Double getRating();
     LocalDateTime getCreatedAt();
     List<String> getImgUrls();
-
-    String getStoreName();
 }

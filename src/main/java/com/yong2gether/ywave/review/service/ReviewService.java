@@ -70,33 +70,4 @@ public class ReviewService {
 
         return reviewRepository.save(review);
     }
-
-
-    @Transactional
-    public ReviewResponse updateReview(Long userId, Long reviewId, ReviewRequest request) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
-
-        if (!review.getUserId().equals(userId)) {
-            throw new RuntimeException("본인의 리뷰만 수정할 수 있습니다.");
-        }
-
-        review.setRating(request.getRating());
-        review.setContent(request.getContent());
-
-        review.clearImages();
-        if (request.getImgUrls() != null) {
-            review.getImgUrls().addAll(request.getImgUrls());
-        }
-
-        Review updated = reviewRepository.save(review);
-
-        return ReviewResponse.builder()
-                .reviewId(updated.getId())
-                .message("리뷰가 수정되었습니다.")
-                .rating(updated.getRating())
-                .content(updated.getContent())
-                .imgUrls(updated.getImgUrls())
-                .build();
-    }
 }

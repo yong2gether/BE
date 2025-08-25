@@ -18,5 +18,6 @@ public class LoginResponse {
     @Builder
     public static class UserInfo {
         private String email;
+        private Long id;
     }
 }

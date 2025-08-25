@@ -44,9 +44,9 @@ public class StoreController {
         return placeDetailsService.getDetailsByStoreId(storeId, userId);
     }
 
-//    @Operation(summary = "placeId를 이용한 특정 가맹점에 대한 상세 조회 APi", description = "구글에 등록된 placeId를 이용한 조회 API로 이것은 혹시 몰라 만든 API입니다.")
-//    @GetMapping("/places/{placeId}/details")
-//    public PlaceDetailsDto detailsByPlace(@PathVariable String placeId) {
-//        return placeDetailsService.getDetailsByPlaceId(placeId);
-//    }
+    @Operation(summary = "placeId를 이용한 특정 가맹점에 대한 상세 조회 API", description = "구글에 등록된 placeId를 이용한 조회 API로 이것은 혹시 몰라 만든 API입니다.")
+    @GetMapping("/places/{placeId}/details")
+    public PlaceDetailsDto detailsByPlace(@PathVariable String placeId) {
+        return placeDetailsService.getDetailsByPlaceId(placeId);
+    }
 }

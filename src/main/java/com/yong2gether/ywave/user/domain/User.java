@@ -1,6 +1,7 @@
 package com.yong2gether.ywave.user.domain;
 
 import com.yong2gether.ywave.global.domain.BaseTime;
+import com.yong2gether.ywave.preference.domain.UserPreferenceCategory;
 import com.yong2gether.ywave.store.domain.Category;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,7 +20,7 @@ import java.util.Set;
 @EqualsAndHashCode(of = "id") // 무한 Lazy 로딩 폭탄을 방지하기 위한 어노테이션
 @ToString(exclude = "password")
 @Entity
-@Table(name="users")
+@Table(name="users", schema = "core")
 @EntityListeners(AuditingEntityListener.class)
 public class User extends BaseTime {
 
@@ -35,7 +36,7 @@ public class User extends BaseTime {
     @Column(nullable = false, length = 40)
     private String nickname;
 
-    @Column(name = "photo_url", length = 255)
+    @Column(name = "photo_url")
     private String photoUrl;
 
     @Column(name = "is_gps_allowed", nullable = false)
@@ -55,7 +56,7 @@ public class User extends BaseTime {
     // @Builder가 아닌 Builder.Default로 함 -> 왜? 기본값이 필수인 속성들로 정해놔서...!
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private Set<PreferenceCategory> preferences = new HashSet<>();
+    private Set<UserPreferenceCategory> preferences = new HashSet<>();
 
     // @EqualsAndHashCode(of="id")에서 Lombok의 id가 둘다 null(ex. 아직 저장 안된 엔티티 두 개의 id)인 경우
     // equals == true가 될 수 있는 걸 미리 방지
@@ -72,7 +73,7 @@ public class User extends BaseTime {
 
     // 편의 메서드
     public void addPreference(Category category) {
-        PreferenceCategory link = PreferenceCategory.of(this, category);
+        UserPreferenceCategory link = UserPreferenceCategory.of(this, category);
         this.preferences.add(link);
     }
 

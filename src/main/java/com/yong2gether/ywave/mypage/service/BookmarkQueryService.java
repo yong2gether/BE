@@ -9,7 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -19,25 +23,23 @@ public class BookmarkQueryService {
     private final BookmarkRepository bookmarkRepository;
     private final BookmarkGroupCommandService bookmarkGroupCommandService;
 
-    @Transactional // 메서드 단위로 write 허용
+    @Transactional
     public List<BookmarkGroupDto> getBookmarkedGroups(Long userId) {
-        // 1) 기본 그룹 보장하고, 그 엔티티를 받아둔다
+
         BookmarkGroup defaultGroup = bookmarkGroupCommandService.ensureDefaultGroup(userId);
 
-        // 2) 모든 그룹(빈 그룹 포함) 조회
         List<BookmarkFlatView> rows = bookmarkRepository.findAllGroupsWithStores(userId);
 
-        // 3) 혹시라도 0건이면(예: 잘못된 JOIN/신규 사용자) 기본 그룹만 내려준다
         if (rows.isEmpty()) {
             return List.of(new BookmarkGroupDto(
                     defaultGroup.getId(),
                     defaultGroup.getName(),
                     defaultGroup.isDefault(),
+                    defaultGroup.getIconUrl(),
                     new ArrayList<>()
             ));
         }
 
-        // 4) 결과 그룹핑
         Map<Long, BookmarkGroupDto> map = new LinkedHashMap<>();
         for (BookmarkFlatView r : rows) {
             BookmarkGroupDto groupDto = map.computeIfAbsent(
@@ -46,6 +48,7 @@ public class BookmarkQueryService {
                             r.getGroupId(),
                             r.getGroupName(),
                             Boolean.TRUE.equals(r.getIsDefault()),
+                            null,
                             new ArrayList<>()
                     )
             );
@@ -56,6 +59,71 @@ public class BookmarkQueryService {
                 ));
             }
         }
-        return new ArrayList<>(map.values());
+
+        List<BookmarkGroupDto> result = new ArrayList<>();
+        for (BookmarkGroupDto groupDto : map.values()) {
+            String iconUrl = bookmarkRepository.findIconUrlByGroupId(groupDto.groupId());
+            BookmarkGroupDto updatedGroupDto = new BookmarkGroupDto(
+                    groupDto.groupId(),
+                    groupDto.groupName(),
+                    groupDto.isDefault(),
+                    iconUrl,
+                    groupDto.stores()
+            );
+            result.add(updatedGroupDto);
+        }
+
+        return result;
     }
+
+    public BookmarkGroupDetailDto getBookmarkGroupDetail(Long userId, Long groupId) {
+        BookmarkGroup group = bookmarkGroupCommandService.getGroupById(groupId);
+
+        if (!group.getUser().getId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 그룹에 대한 접근 권한이 없습니다.");
+        }
+
+        List<Long> storeIds = bookmarkRepository.findStoreIdsByGroupId(groupId);
+
+        return new BookmarkGroupDetailDto(
+                group.getId(),
+                group.getName(),
+                group.getIconUrl(),
+                group.isDefault(),
+                storeIds
+        );
+    }
+
+
+    public List<UserBookmarkItem> getUserBookmarks(Long userId) {
+        return bookmarkRepository.findUserBookmarks(userId).stream()
+                .map(v -> new UserBookmarkItem(
+                        v.getBookmarkId(),
+                        v.getStoreId(),
+                        v.getBookmarkGroupId(),
+                        v.getCreatedAt()
+                ))
+                .toList();
+    }
+
+
+    public List<Long> getBookmarkedStoreIdsIn(Long userId, Collection<Long> storeIds) {
+        if (storeIds == null || storeIds.isEmpty()) return List.of();
+        return bookmarkRepository.findBookmarkedStoreIdsIn(userId, storeIds);
+    }
+
+    public Map<Long, Long> getBookmarkedInfosIn(Long userId, Collection<Long> storeIds) {
+        if (storeIds == null || storeIds.isEmpty()) return Map.of();
+        return bookmarkRepository.findBookmarkedInfosIn(userId, storeIds).stream()
+                .collect(Collectors.toMap(
+                        BookmarkRepository.BookmarkedInfo::getStoreId,
+                        BookmarkRepository.BookmarkedInfo::getBookmarkGroupId
+                ));
+    }
+
+
+    public record UserBookmarkItem(Long bookmarkId,
+                                   Long storeId,
+                                   Long bookmarkGroupId,
+                                   LocalDateTime createdAt) {}
 }

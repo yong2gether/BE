@@ -9,6 +9,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.java.Log;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -50,6 +51,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String token = jwtUtil.createAccessToken(email);
         long expiresIn = jwtUtil.getDefaultTtlMillis();
 
+        Long userId = null;
+        Object principal = authResult.getPrincipal();
+        if(principal instanceof com.yong2gether.ywave.auth.userdetails.CustomUserDetails cud) {
+            userId = cud.getId();
+        }
+
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType("application/json");
         response.setHeader("Authorization", "Bearer " + token);
@@ -58,7 +65,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 .accessToken(token)
                 .tokenType("Bearer")
                 .expiresInMillis(expiresIn)
-                .user(LoginResponse.UserInfo.builder().email(email).build())
+                .user(LoginResponse.UserInfo.builder()
+                        .email(email)
+                        .id(userId)
+                        .build())
                 .build();
 
         objectMapper.writeValue(response.getWriter(), body);
