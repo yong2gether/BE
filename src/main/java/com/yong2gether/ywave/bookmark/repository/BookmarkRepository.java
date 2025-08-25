@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;              // [추가]
+import java.util.Collection;                // [추가]
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +52,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     /** 특정 그룹에 속한 북마크 일괄 삭제 */
     @Transactional
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    void deleteByGroup_Id(Long groupId);
+    void deleteByGroup_Id(@Param("groupId") Long groupId);
 
     /** 북마크 여부 판단 (유저+매장) */
     boolean existsByUser_IdAndStore_Id(Long userId, Long storeId);
@@ -73,4 +75,62 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     /** 그룹에 포함된 매장 ID들 조회 */
     @Query("select b.store.id from Bookmark b where b.group.id = :groupId")
     List<Long> findStoreIdsByGroupId(@Param("groupId") Long groupId);
+
+
+    // ===========================
+    // 여기부터 [추가]: 사용자 북마크 목록/배치 체크
+    // ===========================
+
+    /**
+     * [신규] 사용자 전체 북마크(최신순).
+     * GET /api/v1/users/{userId}/bookmarks 에서 그대로 쓰기 좋은 가벼운 Projection.
+     */
+    @Query("""
+        select b.id       as bookmarkId,
+               b.store.id as storeId,
+               b.group.id as bookmarkGroupId,
+               b.createdAt as createdAt
+        from Bookmark b
+        where b.user.id = :userId
+        order by b.createdAt desc
+    """)
+    List<UserBookmarkView> findUserBookmarks(@Param("userId") Long userId);
+
+    interface UserBookmarkView {
+        Long getBookmarkId();
+        Long getStoreId();
+        Long getBookmarkGroupId();
+        LocalDateTime getCreatedAt();
+    }
+
+    /**
+     * [신규] 화면에 보이는 storeIds만 한 번에 체크 (N+1 방지용).
+     * bookmarked 여부만 필요하면 이걸로 충분.
+     */
+    @Query("""
+        select b.store.id
+        from Bookmark b
+        where b.user.id = :userId
+          and b.store.id in :storeIds
+    """)
+    List<Long> findBookmarkedStoreIdsIn(@Param("userId") Long userId,
+                                        @Param("storeIds") Collection<Long> storeIds);
+
+    /**
+     * [신규] 그룹 ID까지 함께(목록 카드에 그룹 뱃지 등 표시용).
+     */
+    @Query("""
+        select b.store.id as storeId,
+               b.group.id as bookmarkGroupId
+        from Bookmark b
+        where b.user.id = :userId
+          and b.store.id in :storeIds
+    """)
+    List<BookmarkedInfo> findBookmarkedInfosIn(@Param("userId") Long userId,
+                                               @Param("storeIds") Collection<Long> storeIds);
+
+    interface BookmarkedInfo {
+        Long getStoreId();
+        Long getBookmarkGroupId();
+    }
 }

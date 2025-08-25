@@ -27,6 +27,63 @@ public class BookmarkQueryController {
     private final BookmarkGroupCommandService bookmarkGroupCommandService;
     private final UserRepository userRepository;
 
+    // =========================
+    // [신규] 사용자 북마크 "전체 목록" 조회
+    // GET /api/v1/mypage/bookmarks
+    // =========================
+    @Operation(summary = "내 북마크 전체 목록 조회",
+            description = "인증된 사용자 기준으로 모든 북마크(최신순)를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode="200", description="조회 성공"),
+            @ApiResponse(responseCode="401", description="인증 필요")
+    })
+    @GetMapping("/bookmarks")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<BookmarkQueryService.UserBookmarkItem>> getMyBookmarks(
+            Authentication authentication
+    ) {
+        String email = (authentication != null ? authentication.getName() : null);
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증 필요");
+        }
+        Long userId = userRepository.findByEmail(email)
+                .map(u -> u.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자 정보를 찾을 수 없습니다."));
+
+        var items = bookmarkQueryService.getUserBookmarks(userId);
+        return ResponseEntity.ok(items);
+    }
+
+    // =========================
+    // [신규] 목록/지도 배치 체크
+    // GET /api/v1/mypage/bookmarks/check?storeIds=1,2,3
+    // =========================
+    @Operation(summary = "현재 화면의 매장 북마크 여부 일괄 체크",
+            description = "storeIds로 전달된 매장들 중 내가 북마크한 storeId만 반환합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode="200", description="조회 성공"),
+            @ApiResponse(responseCode="401", description="인증 필요")
+    })
+    @GetMapping("/bookmarks/check")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CheckBookmarkedResponse> checkMyBookmarkedStores(
+            Authentication authentication,
+            @RequestParam List<Long> storeIds
+    ) {
+        String email = (authentication != null ? authentication.getName() : null);
+        if (email == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증 필요");
+        }
+        Long userId = userRepository.findByEmail(email)
+                .map(u -> u.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자 정보를 찾을 수 없습니다."));
+
+        var bookmarked = bookmarkQueryService.getBookmarkedStoreIdsIn(userId, storeIds);
+        return ResponseEntity.ok(new CheckBookmarkedResponse(bookmarked));
+    }
+
+    // === 기존 그룹 관련 API들 ===
+
     @Operation(summary="북마크한 가맹점 그룹별 조회",
             description="특정 사용자의 북마크한 가맹점을 그룹 단위로 조회합니다.(default: 기본그룹)")
     @ApiResponses({
@@ -189,4 +246,7 @@ public class BookmarkQueryController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 그룹을 수정할 권한이 없습니다.");
         }
     }
+
+    // 신규 응답 DTO(컨트롤러 내부 레코드로 정의)
+    public record CheckBookmarkedResponse(List<Long> storeIds) {}
 }
