@@ -23,7 +23,7 @@ public class Review extends BaseTime {
     @Column(name="store_id", nullable = false)
     private Long storeId;
 
-    @Column(name="img_urls", columnDefinition = "jsonb")
+    @Column(name="img_urls", columnDefinition = "text[]")
     @Builder.Default
     private List<String> imgUrls = new ArrayList<>();
 
@@ -41,22 +41,5 @@ public class Review extends BaseTime {
 
     public void clearImages() {
         imgUrls.clear();
-    }
-
-    // 추가 getter 메서드들
-    public Long getId() {
-        return id;
-    }
-
-    public Double getRating() {
-        return rating;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public List<String> getImageUrls() {
-        return imgUrls;
     }
 }
