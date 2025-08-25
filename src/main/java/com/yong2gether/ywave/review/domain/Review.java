@@ -23,9 +23,8 @@ public class Review extends BaseTime {
     @Column(name="store_id", nullable = false)
     private Long storeId;
 
-    @Column(name="img_urls", columnDefinition = "text[]")
-    @Builder.Default
-    private List<String> imgUrls = new ArrayList<>();
+    @Column(name="img_url")
+    private String imgUrl;
 
     @Column(nullable = false, length = 1000)
     private String content;
@@ -33,13 +32,17 @@ public class Review extends BaseTime {
     @Column(nullable = false)
     private Double rating;
 
+    // DB에 저장하지 않고 메모리에서만 관리
+    @Transient
+    private List<String> imageUrls = new ArrayList<>();
+
     public void addImageUrl(String url) {
-        if (imgUrls.size() < 5) {
-            imgUrls.add(url);
+        if (imageUrls.size() < 5) {
+            imageUrls.add(url);
         }
     }
 
     public void clearImages() {
-        imgUrls.clear();
+        imageUrls.clear();
     }
 }
