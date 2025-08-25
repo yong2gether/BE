@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -34,23 +33,27 @@ public class RecommendationService {
         var region = regionRepo.findLatestByUserEmail(userEmail)
                 .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST, "선호 지역이 먼저 등록되어야 합니다."));
 
-        var names = categoryRepo.findCategoryNamesByUserEmail(userEmail).stream().distinct().toList();
-        var ids   = categoryRepo.findCategoryIdsByUserEmail(userEmail).stream().distinct().toList();
+        // 선호 카테고리 '이름'만 사용 (상세 조회와 동일한 기준: COALESCE(category, category_ai, '기타'))
+        var names = categoryRepo.findCategoryNamesByUserEmail(userEmail)
+                .stream()
+                .filter(s -> s != null && !s.isBlank())
+                .distinct()
+                .toList();
 
-        log.info("recommend user={}, prefCats(names)={}, ids={}", userEmail, names, ids);
+        log.info("recommend user={}, prefCats(names)={}", userEmail, names);
 
-        if (names.isEmpty() && ids.isEmpty()) {
+        if (names.isEmpty()) {
             throw new ResponseStatusException(BAD_REQUEST, "선호 업종 카테고리가 등록되어야 합니다.");
         }
 
         int radius = defaultRadiusMeters;
         int oversample = Math.max(limit * 6, 30);
 
-        var rows = !names.isEmpty()
-                ? storeRepo.pickWeightedRandomByNames(region.getLng(), region.getLat(), radius,
-                names.toArray(String[]::new), names.size(), oversample)
-                : storeRepo.pickWeightedRandomByIds(region.getLng(), region.getLat(), radius,
-                ids.toArray(Long[]::new), ids.size(), oversample);
+        // Repository는 COALESCE(category, category_ai, '기타') = effective_category에 대해 이름으로 필터
+        var rows = storeRepo.pickWeightedRandomByNames(
+                region.getLng(), region.getLat(), radius,
+                names.toArray(String[]::new), names.size(), oversample
+        );
 
         var candidates = rows.stream().map(r -> new StoreCandidate(
                 r.getId(), r.getName(), r.getRoadAddr(), r.getSigungu(),
@@ -65,8 +68,7 @@ public class RecommendationService {
                 c.id(), c.name(), c.roadAddr(), c.sigungu(),
                 c.lng(), c.lat(),
                 (c.reason() == null || c.reason().isBlank())
-                        ? (names.isEmpty() ? "선호 지역 내 추천 가맹점"
-                        : String.join(", ", names) + " 선호에 맞춘 추천")
+                        ? String.join(", ", names) + " 선호에 맞춘 추천"
                         : c.reason()
         )).toList();
     }
