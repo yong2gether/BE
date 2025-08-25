@@ -5,10 +5,10 @@ package com.yong2gether.ywave.mypage.controller;
 
 import com.yong2gether.ywave.mypage.dto.UserReviewsResponse;
 import com.yong2gether.ywave.mypage.dto.ReviewItemDto;
-import com.yong2gether.ywave.review.dto.ReviewRequest;
+import com.yong2gether.ywave.mypage.dto.CreateReviewRequest;
 import com.yong2gether.ywave.mypage.dto.CreateReviewResponse;
 import com.yong2gether.ywave.mypage.service.ReviewQueryService;
-import com.yong2gether.ywave.review.service.ReviewService;
+import com.yong2gether.ywave.mypage.service.ReviewCommandService;
 import com.yong2gether.ywave.user.repository.UserRepository;
 import com.yong2gether.ywave.review.domain.Review;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,8 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -31,13 +31,7 @@ public class MyPageReviewController {
 
     private final ReviewQueryService reviewQueryService;
     private final UserRepository userRepository;
-    private final ReviewService reviewService;
-
-    // 테스트용 엔드포인트 추가
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("MyPageReviewController is working!");
-    }
+    private final ReviewCommandService reviewCommandService;
 
     @Operation(
             summary = "내가 쓴 리뷰 조회",
@@ -76,21 +70,12 @@ public class MyPageReviewController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
-    @RequestMapping(
-        method = RequestMethod.POST,
-        value = "/reviews",
-        produces = "application/json",
-        consumes = "application/json"
-    )
-    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/reviews")
     public ResponseEntity<CreateReviewResponse> createReview(
             Authentication authentication,
             @RequestParam Long storeId,
-            @RequestBody ReviewRequest request
+            @RequestBody CreateReviewRequest request
     ) {
-        System.out.println("[DEBUG] createReview method called with storeId: " + storeId);
-        
-        // 프로필/북마크와 동일한 인증 패턴 적용
         String email = (authentication != null ? authentication.getName() : null);
         if (email == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증 필요");
@@ -100,16 +85,14 @@ public class MyPageReviewController {
                 .map(u -> u.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자 정보를 찾을 수 없습니다."));
 
-        System.out.println("[DEBUG] createReview principal=" + email + ", userId=" + userId + ", storeId=" + storeId);
-
         // 리뷰 작성 서비스 호출
-        Review review = reviewService.createReviewWithStoreId(userId, storeId, request);
+        Review review = reviewCommandService.createReview(userId, storeId, request);
         
         return ResponseEntity.ok(CreateReviewResponse.success(
             review.getId(),
-            request.getRating(),
-            request.getContent(),
-            request.getImgUrls()
+            request.rating(),
+            request.content(),
+            request.imgUrl()
         ));
     }
 }
