@@ -15,7 +15,7 @@ import java.util.Set;
 @Entity
 @Table(name = "category",
         schema = "core",
-        indexes = { @Index(name = "ix_category_name", columnList = "name") })
+        indexes = { @Index(name = "ix_category_name", columnList = "name", unique = true) })
 public class Category {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
