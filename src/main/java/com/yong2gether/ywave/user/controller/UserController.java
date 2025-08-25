@@ -4,15 +4,13 @@ import com.yong2gether.ywave.auth.dto.LoginRequest;
 import com.yong2gether.ywave.auth.dto.LoginResponse;
 import com.yong2gether.ywave.user.dto.SignUpRequest;
 import com.yong2gether.ywave.user.dto.SignUpResponse;
+import com.yong2gether.ywave.user.dto.UserProfileResponse;
 import com.yong2gether.ywave.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -33,4 +31,5 @@ public class UserController {
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         throw new IllegalStateException("스웨거 docs에서 띄우는 용도입니다.");
     }
+
 }

@@ -2,6 +2,7 @@ package com.yong2gether.ywave.mypage.controller;
 
 import com.yong2gether.ywave.mypage.dto.UpdateProfileRequest;
 import com.yong2gether.ywave.mypage.dto.UpdateProfileResponse;
+import com.yong2gether.ywave.user.dto.UserProfileResponse;
 import com.yong2gether.ywave.user.service.UserService;
 import com.yong2gether.ywave.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,5 +72,11 @@ public class ProfileController {
             // 기타 예외는 500으로 처리
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "프로필 변경 중 오류가 발생했습니다.");
         }
+    }
+
+    @Operation(summary = "프로필 조회 API", description = "특정 사용자에 대한 프로필을 조회하는 API입니다.")
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<UserProfileResponse> getProfile(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getProfile(userId));
     }
 }

@@ -3,6 +3,7 @@ package com.yong2gether.ywave.user.service;
 import com.yong2gether.ywave.user.domain.User;
 import com.yong2gether.ywave.user.dto.SignUpRequest;
 import com.yong2gether.ywave.user.dto.SignUpResponse;
+import com.yong2gether.ywave.user.dto.UserProfileResponse;
 import com.yong2gether.ywave.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -104,5 +105,17 @@ public class UserService {
     // 닉네임 중복 예외 (409 에러)
     public static class DuplicateNicknameException extends RuntimeException {
         public DuplicateNicknameException(String message) { super(message); }
+    }
+
+    // 프로필 조회 서비스
+    public UserProfileResponse getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return new UserProfileResponse(
+                user.getId(),
+                user.getNickname(),
+                user.getEmail(),
+                user.getPhotoUrl()
+        );
     }
 }
