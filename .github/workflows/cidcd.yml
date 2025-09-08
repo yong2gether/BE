@@ -67,10 +67,6 @@ jobs:
           script: |
             set -e
             cd /srv
-            # 패키지가 Private이면 아래 3줄 사용 (Public이면 자동으로 pull 됨)
-            if [ -n "${{ secrets.GHCR_USERNAME }}" ] && [ -n "${{ secrets.GHCR_PAT }}" ]; then
-              echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
-            fi
             docker compose pull
             docker compose up -d
             docker image prune -f
